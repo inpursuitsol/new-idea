@@ -1,0 +1,17 @@
+{
+  "name": "new-idea",
+  "install": ".cursor/install.sh",
+  "terminals": [
+    {
+      "name": "dev-server",
+      "command": "npm start",
+      "description": "Development API server on port 3000"
+    }
+  ],
+  "ports": [
+    {
+      "name": "api",
+      "port": 3000
+    }
+  ]
+}
