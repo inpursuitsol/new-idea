@@ -173,28 +173,38 @@ exitReason =
   :  timeExit ? "TIME EXIT"
   :  "—"
 
-// Live trade status for dashboard (what to do RIGHT NOW)
-tradeStatus =
-     pos == 0 and enterLong ? "ENTER LONG PAIR NOW"
-  :  pos == 0 and enterShort ? "ENTER SHORT PAIR NOW"
-  :  pos == 1 and exitLongTP ? "TAKE PROFIT — close both legs"
-  :  pos == 1 and exitLongStop ? "STOP OUT — close both legs"
-  :  pos == -1 and exitShortTP ? "TAKE PROFIT — close both legs"
-  :  pos == -1 and exitShortStop ? "STOP OUT — close both legs"
-  :  pos != 0 and timeExit ? "TIME EXIT — close both legs"
-  :  pos == 1 ? "HOLD LONG — wait for Z ≥ -" + str.tostring(zExit, "#.#") + " or stop"
-  :  pos == -1 ? "HOLD SHORT — wait for Z ≤ +" + str.tostring(zExit, "#.#") + " or stop"
+// Clear YES/NO for starting a brand-new trade right now
+newEntryYes = enterLong or enterShort
+newEntryTxt = newEntryYes ? "YES — take trade now" : "NO — do not open a new trade"
+newEntryCol = newEntryYes ? color.new(#2e7d32, 0) : color.new(#c62828, 0)
+
+// Primary action for a live trader who may NOT already be in the chart's simulated trade
+yourAction =
+     enterLong ? "ENTER LONG PAIR NOW — Buy stock / Short Nifty"
+  :  enterShort ? "ENTER SHORT PAIR NOW — Short stock / Buy Nifty"
+  :  pos == 1 and exitLongTP ? "IF you are in this trade: TAKE PROFIT"
+  :  pos == 1 and exitLongStop ? "IF you are in this trade: STOP OUT"
+  :  pos == -1 and exitShortTP ? "IF you are in this trade: TAKE PROFIT"
+  :  pos == -1 and exitShortStop ? "IF you are in this trade: STOP OUT"
+  :  pos != 0 and timeExit ? "IF you are in this trade: TIME EXIT"
+  :  pos == 1 ? "NO NEW ENTRY — chart shows an old simulated LONG only. Wait for YES."
+  :  pos == -1 ? "NO NEW ENTRY — chart shows an old simulated SHORT only. Wait for YES."
   :  not corrOk ? "NO TRADE — correlation FAIL"
   :  not hlOk ? "NO TRADE — half-life FAIL"
-  :  longOnly ? "WAIT — need Z ≤ -" + str.tostring(zEntry, "#.#") + " + filters PASS"
-  :  "WAIT — need |Z| ≥ " + str.tostring(zEntry, "#.#") + " + filters PASS"
+  :  longOnly ? "WAIT — need Z ≤ -" + str.tostring(zEntry, "#.#") + " with all PASS"
+  :  "WAIT — need |Z| ≥ " + str.tostring(zEntry, "#.#") + " with all PASS"
 
-statusCol =
-     str.startswith(tradeStatus, "ENTER") or str.startswith(tradeStatus, "TAKE") ? color.new(#2e7d32, 0)
-  :  str.startswith(tradeStatus, "STOP") or str.startswith(tradeStatus, "NO TRADE") ? color.new(#c62828, 0)
-  :  str.startswith(tradeStatus, "TIME") ? color.new(#ef6c00, 0)
-  :  str.startswith(tradeStatus, "HOLD") ? color.new(#1565c0, 0)
+actionCol =
+     str.startswith(yourAction, "ENTER") or str.contains(yourAction, "TAKE PROFIT") ? color.new(#2e7d32, 0)
+  :  str.contains(yourAction, "STOP") or str.startswith(yourAction, "NO TRADE") or str.startswith(yourAction, "NO NEW") ? color.new(#c62828, 0)
+  :  str.contains(yourAction, "TIME") ? color.new(#ef6c00, 0)
   :  color.new(#546e7a, 0)
+
+// Secondary: what the chart state-machine thinks (historical replay)
+chartPosTxt =
+     pos == 1 ? "Simulated LONG (old signal on chart)"
+  :  pos == -1 ? "Simulated SHORT (old signal on chart)"
+  :  "FLAT"
 
 passFail(bool ok) =>
     ok ? "PASS" : "FAIL"
@@ -222,74 +232,70 @@ bgcolor(pos == 1 ? color.new(#2e7d32, 92) : pos == -1 ? color.new(#c62828, 92) :
 
 // ── Live Trade Dashboard ─────────────────────────────────────────────────────
 tableXY = tablePos == "Top Left" ? position.top_left : tablePos == "Top Right" ? position.top_right : tablePos == "Bottom Left" ? position.bottom_left : position.bottom_right
-var table dash = table.new(tableXY, 2, 16, bgcolor=color.new(#1b1b1b, 5), border_width=1, border_color=color.new(#90a4ae, 50))
+var table dash = table.new(tableXY, 2, 17, bgcolor=color.new(#1b1b1b, 5), border_width=1, border_color=color.new(#90a4ae, 50))
 
 if showDash and barstate.islast
-    // Header
     table.cell(dash, 0, 0, "LIVE TRADE COACH", text_color=color.white, text_size=size.small, bgcolor=color.new(#0d47a1, 0))
     table.cell(dash, 1, 0, syminfo.ticker + " × " + str.replace_all(pairSym, "NSE:", ""), text_color=color.white, text_size=size.small, bgcolor=color.new(#0d47a1, 0))
 
-    // Big status — what to do now
-    table.cell(dash, 0, 1, "TRADE STATUS", text_color=color.gray, text_size=size.tiny)
-    table.cell(dash, 1, 1, tradeStatus, text_color=color.white, text_size=size.tiny, bgcolor=color.new(statusCol, 70))
+    // Most important row for beginners
+    table.cell(dash, 0, 1, "NEW ENTRY TODAY?", text_color=color.white, text_size=size.small, bgcolor=color.new(#263238, 0))
+    table.cell(dash, 1, 1, newEntryTxt, text_color=color.white, text_size=size.small, bgcolor=color.new(newEntryCol, 35))
 
-    // Current Z vs levels
-    table.cell(dash, 0, 2, "Z-Score (live)", text_color=color.gray, text_size=size.tiny)
-    table.cell(dash, 1, 2, str.tostring(zScore, "#.###"), text_color=zColor, text_size=size.normal)
+    table.cell(dash, 0, 2, "YOUR ACTION", text_color=color.gray, text_size=size.tiny)
+    table.cell(dash, 1, 2, yourAction, text_color=color.white, text_size=size.tiny, bgcolor=color.new(actionCol, 70))
 
-    table.cell(dash, 0, 3, "TP target Z", text_color=color.gray, text_size=size.tiny)
+    table.cell(dash, 0, 3, "Z-Score (live)", text_color=color.gray, text_size=size.tiny)
+    table.cell(dash, 1, 3, str.tostring(zScore, "#.###"), text_color=zColor, text_size=size.normal)
+
+    table.cell(dash, 0, 4, "TP target Z", text_color=color.gray, text_size=size.tiny)
     tpTxt = pos == 1 ? "≥ -" + str.tostring(zExit, "#.#") : pos == -1 ? "≤ +" + str.tostring(zExit, "#.#") : "±" + str.tostring(zExit, "#.#")
-    table.cell(dash, 1, 3, tpTxt, text_color=color.new(#ff8f00, 0), text_size=size.small)
+    table.cell(dash, 1, 4, tpTxt, text_color=color.new(#ff8f00, 0), text_size=size.small)
 
-    table.cell(dash, 0, 4, "Stop Z", text_color=color.gray, text_size=size.tiny)
+    table.cell(dash, 0, 5, "Stop Z", text_color=color.gray, text_size=size.tiny)
     stTxt = pos == 1 ? "≤ -" + str.tostring(zStop, "#.#") : pos == -1 ? "≥ +" + str.tostring(zStop, "#.#") : "±" + str.tostring(zStop, "#.#")
-    table.cell(dash, 1, 4, stTxt, text_color=color.new(#c62828, 0), text_size=size.small)
+    table.cell(dash, 1, 5, stTxt, text_color=color.new(#c62828, 0), text_size=size.small)
 
-    table.cell(dash, 0, 5, "Bars Held / Max", text_color=color.gray, text_size=size.tiny)
+    table.cell(dash, 0, 6, "Bars Held / Max", text_color=color.gray, text_size=size.tiny)
     holdCol = timeExit ? color.new(#c62828, 0) : barsHeld >= maxHoldBars - 2 and pos != 0 ? color.new(#ef6c00, 0) : color.white
-    table.cell(dash, 1, 5, str.tostring(barsHeld) + " / " + str.tostring(maxHoldBars), text_color=holdCol, text_size=size.small)
+    table.cell(dash, 1, 6, str.tostring(barsHeld) + " / " + str.tostring(maxHoldBars) + " (chart only)", text_color=holdCol, text_size=size.small)
 
-    // Entry checklist
-    table.cell(dash, 0, 6, "── ENTRY CHECKS ──", text_color=color.new(#90a4ae, 0), text_size=size.tiny)
-    table.cell(dash, 1, 6, longOnly ? "LONG-ONLY mode" : "LONG+SHORT mode", text_color=color.new(#90a4ae, 0), text_size=size.tiny)
+    table.cell(dash, 0, 7, "── ENTRY CHECKS ──", text_color=color.new(#90a4ae, 0), text_size=size.tiny)
+    table.cell(dash, 1, 7, longOnly ? "LONG-ONLY mode" : "LONG+SHORT mode", text_color=color.new(#90a4ae, 0), text_size=size.tiny)
 
-    table.cell(dash, 0, 7, "Z ≤ -" + str.tostring(zEntry, "#.#") + " (long)", text_color=color.gray, text_size=size.tiny)
-    table.cell(dash, 1, 7, passFail(zLongOk) + "  (" + str.tostring(zScore, "#.##") + ")", text_color=passCol(zLongOk), text_size=size.small)
+    table.cell(dash, 0, 8, "Z ≤ -" + str.tostring(zEntry, "#.#") + " (long)", text_color=color.gray, text_size=size.tiny)
+    table.cell(dash, 1, 8, passFail(zLongOk) + "  (" + str.tostring(zScore, "#.##") + ")", text_color=passCol(zLongOk), text_size=size.small)
 
-    table.cell(dash, 0, 8, "|Corr| ≥ " + str.tostring(minCorr, "#.##"), text_color=color.gray, text_size=size.tiny)
-    table.cell(dash, 1, 8, passFail(corrOk) + "  (" + str.tostring(corr, "#.###") + ")", text_color=passCol(corrOk), text_size=size.small)
+    table.cell(dash, 0, 9, "|Corr| ≥ " + str.tostring(minCorr, "#.##"), text_color=color.gray, text_size=size.tiny)
+    table.cell(dash, 1, 9, passFail(corrOk) + "  (" + str.tostring(corr, "#.###") + ")", text_color=passCol(corrOk), text_size=size.small)
 
-    table.cell(dash, 0, 9, "Half-Life ≤ " + str.tostring(maxHalfLife, "#.#"), text_color=color.gray, text_size=size.tiny)
+    table.cell(dash, 0, 10, "Half-Life ≤ " + str.tostring(maxHalfLife, "#.#"), text_color=color.gray, text_size=size.tiny)
     hlTxt = na(halfLife) ? "n/a" : str.tostring(halfLife, "#.1")
-    table.cell(dash, 1, 9, passFail(hlOk) + "  (" + hlTxt + " bars)", text_color=passCol(hlOk), text_size=size.small)
+    table.cell(dash, 1, 10, passFail(hlOk) + "  (" + hlTxt + " bars)", text_color=passCol(hlOk), text_size=size.small)
 
-    table.cell(dash, 0, 10, "All filters", text_color=color.gray, text_size=size.tiny)
-    table.cell(dash, 1, 10, passFail(entryFiltersOk), text_color=passCol(entryFiltersOk), text_size=size.small)
+    table.cell(dash, 0, 11, "All filters", text_color=color.gray, text_size=size.tiny)
+    table.cell(dash, 1, 11, passFail(entryFiltersOk), text_color=passCol(entryFiltersOk), text_size=size.small)
 
-    // Position / hedge info
-    table.cell(dash, 0, 11, "Position", text_color=color.gray, text_size=size.tiny)
-    posLabel = pos == 1 ? "LONG PAIR" : pos == -1 ? "SHORT PAIR" : "FLAT"
+    table.cell(dash, 0, 12, "Chart position", text_color=color.gray, text_size=size.tiny)
     posCol = pos == 1 ? color.new(#2e7d32, 0) : pos == -1 ? color.new(#c62828, 0) : color.new(#546e7a, 0)
-    table.cell(dash, 1, 11, posLabel, text_color=posCol, text_size=size.small)
+    table.cell(dash, 1, 12, chartPosTxt, text_color=posCol, text_size=size.tiny)
 
-    table.cell(dash, 0, 12, "Do this", text_color=color.gray, text_size=size.tiny)
+    table.cell(dash, 0, 13, "Do this", text_color=color.gray, text_size=size.tiny)
     doTxt =
-         pos == 1 ? "Hold: Long stock / Short Nifty"
-      :  pos == -1 ? "Hold: Short stock / Long Nifty"
-      :  enterLong ? "Buy stock / Short Nifty (β-sized)"
-      :  enterShort ? "Short stock / Buy Nifty (β-sized)"
-      :  "No position — wait for PASS checks"
-    table.cell(dash, 1, 12, doTxt, text_color=color.white, text_size=size.tiny)
+         newEntryYes and enterLong ? "Buy stock / Short Nifty (β-sized)"
+      :  newEntryYes and enterShort ? "Short stock / Buy Nifty (β-sized)"
+      :  "Do not open a new trade today"
+    table.cell(dash, 1, 13, doTxt, text_color=color.white, text_size=size.tiny)
 
-    table.cell(dash, 0, 13, "Hedge β (size Nifty)", text_color=color.gray, text_size=size.tiny)
+    table.cell(dash, 0, 14, "Hedge β (size Nifty)", text_color=color.gray, text_size=size.tiny)
     betaShow = pos != 0 and not na(entryBeta) ? entryBeta : hedgeBeta
-    table.cell(dash, 1, 13, str.tostring(betaShow, "#.####") + " × stock notional", text_color=color.white, text_size=size.tiny)
+    table.cell(dash, 1, 14, str.tostring(betaShow, "#.####") + " × stock notional", text_color=color.white, text_size=size.tiny)
 
-    table.cell(dash, 0, 14, "Entry Z (this trade)", text_color=color.gray, text_size=size.tiny)
-    table.cell(dash, 1, 14, na(entryZ) ? "—" : str.tostring(entryZ, "#.###"), text_color=color.white, text_size=size.tiny)
+    table.cell(dash, 0, 15, "Entry Z (chart trade)", text_color=color.gray, text_size=size.tiny)
+    table.cell(dash, 1, 15, na(entryZ) ? "—" : str.tostring(entryZ, "#.###"), text_color=color.white, text_size=size.tiny)
 
-    table.cell(dash, 0, 15, "How to read", text_color=color.gray, text_size=size.tiny)
-    table.cell(dash, 1, 15, "Watch TRADE STATUS daily. Green PASS = ok to enter. In trade: exit on TP/STOP/TIME.", text_color=color.new(#b0bec5, 0), text_size=size.tiny)
+    table.cell(dash, 0, 16, "How to read", text_color=color.gray, text_size=size.tiny)
+    table.cell(dash, 1, 16, "Only trade when NEW ENTRY TODAY? = YES. Ignore old LONG/SHORT marks unless you already took that trade.", text_color=color.new(#b0bec5, 0), text_size=size.tiny)
 
 // ── Alerts ───────────────────────────────────────────────────────────────────
 alertcondition(longSignal, title="Enter Long Pair", message="ENTER LONG PAIR — Buy stock / Short Nifty. Filters PASS.")
