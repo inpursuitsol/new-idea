@@ -265,9 +265,11 @@ def main():
     trades_df = pd.DataFrame([t.__dict__ for t in all_trades])
     sym_df = pd.DataFrame(per_symbol).sort_values("total_ret_sum", ascending=False) if per_symbol else pd.DataFrame()
 
-    out_dir = "/workspace/scans"
-    trades_df.to_csv(f"{out_dir}/pair_backtest_trades.csv", index=False)
-    sym_df.to_csv(f"{out_dir}/pair_backtest_by_symbol.csv", index=False)
+    from pathlib import Path
+    out_dir = Path(__file__).resolve().parent
+    out_dir.mkdir(parents=True, exist_ok=True)
+    trades_df.to_csv(out_dir / "pair_backtest_trades.csv", index=False)
+    sym_df.to_csv(out_dir / "pair_backtest_by_symbol.csv", index=False)
 
     # Yearly breakdown
     if not trades_df.empty:

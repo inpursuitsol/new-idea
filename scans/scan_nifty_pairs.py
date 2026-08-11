@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import warnings
 from datetime import datetime, timezone
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -193,7 +194,10 @@ def main() -> None:
     print("=" * 88)
     print(fmt(ready))
 
-    out_path = "/workspace/scans/nifty_pair_scan_latest.csv"
+    # Save next to this script (works on Chromebook, PC, cloud, etc.)
+    out_dir = Path(__file__).resolve().parent
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out_path = out_dir / "nifty_pair_scan_latest.csv"
     out.drop(columns=["_o"], errors="ignore").to_csv(out_path, index=False)
     print(f"Saved → {out_path}")
     print(f"Scanned {len(out)} symbols.")
