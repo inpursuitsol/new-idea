@@ -1,0 +1,260 @@
+// This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+//@version=5
+indicator("Index Pair Coach — Nifty×BankNifty", shorttitle="NB Pair Coach", overlay=false, max_bars_back=5000, precision=4)
+
+// =============================================================================
+// INDEX PAIR COACH — NIFTY × BANKNIFTY
+// -----------------------------------------------------------------------------
+// Pair trade the two indices (not stock vs Nifty).
+// Chart = BANKNIFTY by default. Pair Symbol = NIFTY.
+//
+// Options execution (1 lot + 1 lot style):
+//   LONG BN PAIR  = BankNifty cheap vs Nifty → Buy BN CE + Buy Nifty PE
+//   SHORT BN PAIR = BankNifty rich  vs Nifty → Buy BN PE + Buy Nifty CE
+//
+// Watch NEW ENTRY TODAY? = YES before taking a trade.
+// =============================================================================
+
+grpCore = "1) Pair Setup"
+pairSym = input.symbol("NSE:NIFTY", "Hedge Index (usually Nifty)", group=grpCore, tooltip="Put this indicator on BANKNIFTY chart. Keep hedge as NSE:NIFTY.")
+spreadMode = input.string("Log Residual (OLS)", "Spread Model", options=["Residual (OLS)", "Log Residual (OLS)", "Price Ratio", "Log Ratio"], group=grpCore, tooltip="Log Residual recommended for indices at different price levels.")
+betaMode = input.string("Rolling OLS", "Hedge Ratio", options=["Rolling OLS", "Kalman Filter", "Fixed 1.0"], group=grpCore)
+lookback = input.int(60, "Lookback (bars)", minval=20, maxval=500, group=grpCore)
+
+grpPlay = "2) Playbook (tuned for edge)"
+tradeBothSides = input.bool(true, "Allow both LONG and SHORT BN pair", group=grpPlay, tooltip="ON = trade both directions. OFF = only when BankNifty is cheap (LONG BN pair).")
+zEntry = input.float(2.0, "Entry |Z|", minval=0.5, maxval=5.0, step=0.1, group=grpPlay)
+zExit = input.float(0.5, "Take-Profit |Z|", minval=0.0, maxval=3.0, step=0.1, group=grpPlay)
+zStop = input.float(3.5, "Stop |Z|", minval=1.0, maxval=8.0, step=0.1, group=grpPlay)
+minCorr = input.float(0.70, "Min |Correlation|", minval=0.0, maxval=0.99, step=0.05, group=grpPlay)
+maxHalfLife = input.float(15.0, "Max Half-Life (bars)", minval=1.0, maxval=60.0, step=0.5, group=grpPlay)
+maxHoldBars = input.int(10, "Max Hold (bars)", minval=3, maxval=60, group=grpPlay)
+useHlFilter = input.bool(false, "Require Half-Life Filter", group=grpPlay, tooltip="Tuned default OFF — time stop carries more of the edge.")
+alertOnConfirm = input.bool(true, "Alerts Need Bar Close", group=grpPlay)
+
+grpAdv = "3) Advanced"
+kalmanQ = input.float(0.0001, "Kalman Q", minval=0.000001, maxval=0.01, step=0.0001, group=grpAdv)
+kalmanR = input.float(0.01, "Kalman R", minval=0.0001, maxval=1.0, step=0.001, group=grpAdv)
+
+grpVis = "4) Display"
+showZPlot = input.bool(true, "Show Z-Score", group=grpVis)
+showDash = input.bool(true, "Show Live Coach Dashboard", group=grpVis)
+tablePos = input.string("Top Right", "Dashboard Position", options=["Top Left", "Top Right", "Bottom Left", "Bottom Right"], group=grpVis)
+
+// Chart = BankNifty (bn), pair = Nifty (nf)
+bnClose = close
+nfClose = request.security(pairSym, timeframe.period, close, barmerge.gaps_off, barmerge.lookahead_off)
+
+useLog = str.contains(spreadMode, "Log")
+bnPx = useLog ? math.log(math.max(bnClose, 1e-10)) : bnClose
+nfPx = useLog ? math.log(math.max(nfClose, 1e-10)) : nfClose
+
+f_ols_beta(float y, float x, int len) =>
+    meanY = ta.sma(y, len)
+    meanX = ta.sma(x, len)
+    covXY = ta.sma(y * x, len) - meanY * meanX
+    varX = ta.sma(x * x, len) - meanX * meanX
+    varX > 1e-12 ? covXY / varX : 1.0
+
+f_ols_alpha(float y, float x, float beta, int len) =>
+    ta.sma(y, len) - beta * ta.sma(x, len)
+
+olsBeta = f_ols_beta(bnPx, nfPx, lookback)
+olsAlpha = f_ols_alpha(bnPx, nfPx, olsBeta, lookback)
+
+var float kfBeta = 1.0
+var float kfP = 1.0
+if barstate.isfirst
+    kfBeta := 1.0
+    kfP := 1.0
+else
+    betaPred = kfBeta
+    pPred = kfP + kalmanQ
+    x = nfPx
+    y = bnPx
+    S = x * x * pPred + kalmanR
+    K = S > 0 ? (pPred * x) / S : 0.0
+    innov = y - betaPred * x
+    kfBeta := betaPred + K * innov
+    kfP := (1.0 - K * x) * pPred
+
+hedgeBeta = betaMode == "Kalman Filter" ? kfBeta : betaMode == "Fixed 1.0" ? 1.0 : olsBeta
+hedgeAlpha = betaMode == "Rolling OLS" ? olsAlpha : 0.0
+
+spread = switch spreadMode
+    "Residual (OLS)" => bnClose - (hedgeAlpha + hedgeBeta * nfClose)
+    "Log Residual (OLS)" => bnPx - (hedgeAlpha + hedgeBeta * nfPx)
+    "Price Ratio" => bnClose / math.max(nfClose, 1e-10)
+    "Log Ratio" => math.log(math.max(bnClose, 1e-10) / math.max(nfClose, 1e-10))
+    => bnClose - hedgeBeta * nfClose
+
+spreadMean = ta.sma(spread, lookback)
+spreadStd = ta.stdev(spread, lookback)
+zScore = spreadStd > 1e-12 ? (spread - spreadMean) / spreadStd : 0.0
+
+corr = ta.correlation(bnClose, nfClose, lookback)
+corrOk = math.abs(corr) >= minCorr
+
+f_half_life(float spr, float mean, int len) =>
+    float ySum = 0.0
+    float xSum = 0.0
+    float xxSum = 0.0
+    float xySum = 0.0
+    int n = 0
+    for i = 0 to len - 2
+        float x = spr[i + 1] - mean
+        float y = spr[i] - mean
+        xSum += x
+        ySum += y
+        xxSum += x * x
+        xySum += x * y
+        n += 1
+    float denom = n * xxSum - xSum * xSum
+    float phi = denom != 0 ? (n * xySum - xSum * ySum) / denom : 0.0
+    (phi > 0 and phi < 1) ? -math.log(2.0) / math.log(phi) : na
+
+halfLife = f_half_life(spread, spreadMean, lookback)
+hlOk = not useHlFilter or (not na(halfLife) and halfLife > 0 and halfLife <= maxHalfLife)
+entryFiltersOk = corrOk and hlOk
+
+zLongOk = zScore <= -zEntry   // BankNifty cheap vs Nifty
+zShortOk = zScore >= zEntry   // BankNifty rich vs Nifty
+
+var int pos = 0
+var int entryBar = na
+var float entryZ = na
+var float entryBeta = na
+
+enterLong = entryFiltersOk and zLongOk and pos <= 0
+enterShort = tradeBothSides and entryFiltersOk and zShortOk and pos >= 0
+
+barsHeld = pos != 0 and not na(entryBar) ? bar_index - entryBar : 0
+timeExit = pos != 0 and barsHeld >= maxHoldBars
+
+exitLongTP = pos == 1 and zScore >= -zExit
+exitLongStop = pos == 1 and zScore <= -zStop
+exitShortTP = pos == -1 and zScore <= zExit
+exitShortStop = pos == -1 and zScore >= zStop
+exitLong = exitLongTP or exitLongStop or (pos == 1 and timeExit)
+exitShort = exitShortTP or exitShortStop or (pos == -1 and timeExit)
+
+if enterLong
+    pos := 1
+    entryBar := bar_index
+    entryZ := zScore
+    entryBeta := hedgeBeta
+else if enterShort
+    pos := -1
+    entryBar := bar_index
+    entryZ := zScore
+    entryBeta := hedgeBeta
+else if exitLong or exitShort
+    pos := 0
+    entryBar := na
+    entryZ := na
+    entryBeta := na
+
+longSignal = enterLong and (not alertOnConfirm or barstate.isconfirmed)
+shortSignal = enterShort and (not alertOnConfirm or barstate.isconfirmed)
+exitSignal = (exitLong or exitShort) and (not alertOnConfirm or barstate.isconfirmed)
+
+newEntryYes = enterLong or enterShort
+newEntryTxt = newEntryYes ? "YES — take trade now" : "NO — do not open a new trade"
+newEntryCol = newEntryYes ? color.new(#2e7d32, 0) : color.new(#c62828, 0)
+
+optionsRecipe =
+     enterLong ? "DEBIT SPREADS: BN bull CALL (ATM CE/OTM CE) + Nifty bear PUT (ATM PE/OTM PE)"
+  :  enterShort ? "DEBIT SPREADS: BN bear PUT (ATM PE/OTM PE) + Nifty bull CALL (ATM CE/OTM CE)"
+  :  pos == 1 and (exitLongTP or exitLongStop or timeExit) ? "CLOSE both debit spreads"
+  :  pos == -1 and (exitShortTP or exitShortStop or timeExit) ? "CLOSE both debit spreads"
+  :  pos == 1 ? "NO NEW ENTRY — old simulated LONG on chart only"
+  :  pos == -1 ? "NO NEW ENTRY — old simulated SHORT on chart only"
+  :  not corrOk ? "NO TRADE — correlation FAIL"
+  :  not hlOk ? "NO TRADE — half-life FAIL"
+  :  "WAIT for |Z| ≥ " + str.tostring(zEntry, "#.#") + " + filters PASS"
+
+actionCol =
+     str.startswith(optionsRecipe, "Buy") or str.startswith(optionsRecipe, "CLOSE") ? color.new(#2e7d32, 0)
+  :  str.startswith(optionsRecipe, "NO TRADE") or str.startswith(optionsRecipe, "NO NEW") ? color.new(#c62828, 0)
+  :  color.new(#546e7a, 0)
+
+chartPosTxt =
+     pos == 1 ? "Simulated LONG BN pair (chart only)"
+  :  pos == -1 ? "Simulated SHORT BN pair (chart only)"
+  :  "FLAT"
+
+passFail(bool ok) => ok ? "PASS" : "FAIL"
+passCol(bool ok) => ok ? color.new(#2e7d32, 0) : color.new(#c62828, 0)
+
+zColor = zScore > zEntry ? color.new(#c62828, 0) : zScore < -zEntry ? color.new(#2e7d32, 0) : color.new(#546e7a, 0)
+plot(showZPlot ? zScore : na, "Z-Score", color=zColor, linewidth=2)
+hline(zEntry, "+Entry", color=color.new(#c62828, 40), linestyle=hline.style_dashed)
+hline(-zEntry, "−Entry", color=color.new(#2e7d32, 30), linestyle=hline.style_dashed)
+hline(zExit, "+TP", color=color.new(#ff8f00, 60), linestyle=hline.style_dotted)
+hline(-zExit, "−TP", color=color.new(#ff8f00, 40), linestyle=hline.style_dotted)
+hline(zStop, "+Stop", color=color.new(#b71c1c, 40), linestyle=hline.style_solid)
+hline(-zStop, "−Stop", color=color.new(#b71c1c, 20), linestyle=hline.style_solid)
+hline(0, "Zero", color=color.new(#90a4ae, 50))
+
+plotshape(longSignal, title="Long BN Pair", style=shape.triangleup, location=location.bottom, color=color.new(#2e7d32, 0), size=size.small, text="LONG\nBN")
+plotshape(shortSignal, title="Short BN Pair", style=shape.triangledown, location=location.top, color=color.new(#c62828, 0), size=size.small, text="SHORT\nBN")
+plotshape(exitSignal, title="Exit", style=shape.circle, location=location.bottom, color=color.new(#ff8f00, 0), size=size.tiny, text="EXIT")
+bgcolor(pos == 1 ? color.new(#2e7d32, 92) : pos == -1 ? color.new(#c62828, 92) : na)
+
+tableXY = tablePos == "Top Left" ? position.top_left : tablePos == "Top Right" ? position.top_right : tablePos == "Bottom Left" ? position.bottom_left : position.bottom_right
+var table dash = table.new(tableXY, 2, 15, bgcolor=color.new(#1b1b1b, 5), border_width=1, border_color=color.new(#90a4ae, 50))
+
+if showDash and barstate.islast
+    table.cell(dash, 0, 0, "NB PAIR COACH", text_color=color.white, text_size=size.small, bgcolor=color.new(#00695c, 0))
+    table.cell(dash, 1, 0, "BANKNIFTY × NIFTY", text_color=color.white, text_size=size.small, bgcolor=color.new(#00695c, 0))
+
+    table.cell(dash, 0, 1, "NEW ENTRY TODAY?", text_color=color.white, text_size=size.small, bgcolor=color.new(#263238, 0))
+    table.cell(dash, 1, 1, newEntryTxt, text_color=color.white, text_size=size.small, bgcolor=color.new(newEntryCol, 35))
+
+    table.cell(dash, 0, 2, "OPTIONS (1L+1L)", text_color=color.gray, text_size=size.tiny)
+    table.cell(dash, 1, 2, optionsRecipe, text_color=color.white, text_size=size.tiny, bgcolor=color.new(actionCol, 70))
+
+    table.cell(dash, 0, 3, "Z-Score (live)", text_color=color.gray, text_size=size.tiny)
+    table.cell(dash, 1, 3, str.tostring(zScore, "#.###"), text_color=zColor, text_size=size.normal)
+
+    table.cell(dash, 0, 4, "TP / Stop Z", text_color=color.gray, text_size=size.tiny)
+    table.cell(dash, 1, 4, "TP ±" + str.tostring(zExit, "#.#") + " | Stop ±" + str.tostring(zStop, "#.#"), text_color=color.white, text_size=size.tiny)
+
+    table.cell(dash, 0, 5, "Bars Held / Max", text_color=color.gray, text_size=size.tiny)
+    table.cell(dash, 1, 5, str.tostring(barsHeld) + " / " + str.tostring(maxHoldBars) + " (chart only)", text_color=color.white, text_size=size.small)
+
+    table.cell(dash, 0, 6, "── ENTRY CHECKS ──", text_color=color.new(#90a4ae, 0), text_size=size.tiny)
+    table.cell(dash, 1, 6, tradeBothSides ? "LONG+SHORT enabled" : "LONG BN only", text_color=color.new(#90a4ae, 0), text_size=size.tiny)
+
+    table.cell(dash, 0, 7, "Z ≤ -" + str.tostring(zEntry, "#.#") + " (BN cheap)", text_color=color.gray, text_size=size.tiny)
+    table.cell(dash, 1, 7, passFail(zLongOk) + " (" + str.tostring(zScore, "#.##") + ")", text_color=passCol(zLongOk), text_size=size.small)
+
+    table.cell(dash, 0, 8, "Z ≥ +" + str.tostring(zEntry, "#.#") + " (BN rich)", text_color=color.gray, text_size=size.tiny)
+    table.cell(dash, 1, 8, passFail(zShortOk) + " (" + str.tostring(zScore, "#.##") + ")", text_color=passCol(zShortOk), text_size=size.small)
+
+    table.cell(dash, 0, 9, "|Corr| ≥ " + str.tostring(minCorr, "#.##"), text_color=color.gray, text_size=size.tiny)
+    table.cell(dash, 1, 9, passFail(corrOk) + " (" + str.tostring(corr, "#.###") + ")", text_color=passCol(corrOk), text_size=size.small)
+
+    table.cell(dash, 0, 10, "Half-Life ≤ " + str.tostring(maxHalfLife, "#.#"), text_color=color.gray, text_size=size.tiny)
+    hlTxt = na(halfLife) ? "n/a" : str.tostring(halfLife, "#.1")
+    table.cell(dash, 1, 10, passFail(hlOk) + " (" + hlTxt + " bars)", text_color=passCol(hlOk), text_size=size.small)
+
+    table.cell(dash, 0, 11, "All filters", text_color=color.gray, text_size=size.tiny)
+    table.cell(dash, 1, 11, passFail(entryFiltersOk), text_color=passCol(entryFiltersOk), text_size=size.small)
+
+    table.cell(dash, 0, 12, "Chart position", text_color=color.gray, text_size=size.tiny)
+    table.cell(dash, 1, 12, chartPosTxt, text_color=color.white, text_size=size.tiny)
+
+    table.cell(dash, 0, 13, "Hedge β (OLS)", text_color=color.gray, text_size=size.tiny)
+    betaShow = pos != 0 and not na(entryBeta) ? entryBeta : hedgeBeta
+    table.cell(dash, 1, 13, str.tostring(betaShow, "#.####") + " (1L+1L is approx)", text_color=color.white, text_size=size.tiny)
+
+    table.cell(dash, 0, 14, "How to read", text_color=color.gray, text_size=size.tiny)
+    table.cell(dash, 1, 14, "Trade only if NEW ENTRY TODAY?=YES. Put indicator on BANKNIFTY chart.", text_color=color.new(#b0bec5, 0), text_size=size.tiny)
+
+alertcondition(longSignal, title="Long BN Pair", message="LONG BN PAIR: Buy BankNifty CE + Nifty PE")
+alertcondition(shortSignal, title="Short BN Pair", message="SHORT BN PAIR: Buy BankNifty PE + Nifty CE")
+alertcondition(exitSignal and (exitLongTP or exitShortTP), title="Take Profit", message="TAKE PROFIT — close both option legs")
+alertcondition(exitSignal and (exitLongStop or exitShortStop), title="Stop Out", message="STOP OUT — close both option legs")
+alertcondition(exitSignal and timeExit, title="Time Exit", message="TIME EXIT — close both option legs")
+alertcondition(newEntryYes, title="New Entry Ready", message="NB Pair Coach: NEW ENTRY TODAY = YES")

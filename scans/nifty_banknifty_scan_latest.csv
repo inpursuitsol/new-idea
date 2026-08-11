@@ -1,0 +1,2 @@
+signal,z,corr,half_life,log_beta,return_beta,corr_ok,hl_ok,filters_ok,options_1L_1L,tp_z,stop_z,max_hold,bn_last,nf_last
+FLAT,-0.8832757987607517,0.7804497391527212,12.213376174964766,1.4148108058714146,1.1946424763477606,True,True,True,Filters PASS — wait for |Z| ≥ 2,0.5,3.5,10,57686.94921875,24583.80078125
