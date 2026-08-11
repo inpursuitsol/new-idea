@@ -163,10 +163,10 @@ newEntryTxt = newEntryYes ? "YES — take trade now" : "NO — do not open a new
 newEntryCol = newEntryYes ? color.new(#2e7d32, 0) : color.new(#c62828, 0)
 
 optionsRecipe =
-     enterLong ? "Buy 1L BankNifty CE + Buy 1L Nifty PE"
-  :  enterShort ? "Buy 1L BankNifty PE + Buy 1L Nifty CE"
-  :  pos == 1 and (exitLongTP or exitLongStop or timeExit) ? "CLOSE both option legs"
-  :  pos == -1 and (exitShortTP or exitShortStop or timeExit) ? "CLOSE both option legs"
+     enterLong ? "DEBIT SPREADS: BN bull CALL (ATM CE/OTM CE) + Nifty bear PUT (ATM PE/OTM PE)"
+  :  enterShort ? "DEBIT SPREADS: BN bear PUT (ATM PE/OTM PE) + Nifty bull CALL (ATM CE/OTM CE)"
+  :  pos == 1 and (exitLongTP or exitLongStop or timeExit) ? "CLOSE both debit spreads"
+  :  pos == -1 and (exitShortTP or exitShortStop or timeExit) ? "CLOSE both debit spreads"
   :  pos == 1 ? "NO NEW ENTRY — old simulated LONG on chart only"
   :  pos == -1 ? "NO NEW ENTRY — old simulated SHORT on chart only"
   :  not corrOk ? "NO TRADE — correlation FAIL"

@@ -1,59 +1,31 @@
-# Index & Stock Pair Trading Toolkit (TradingView)
+# Compound Pair System (money engine)
 
-## Primary system (fits ₹4L / 1 lot options): Nifty × BankNifty
-
-| File | Purpose |
-|------|---------|
-| **`tradingview/Index_Pair_Coach_Nifty_BankNifty.pine`** | **NB Pair Coach** indicator (use this) |
-| **`scans/scan_nifty_banknifty.py`** | Daily Nifty×BankNifty scanner |
-
-### Install indicator
-1. Copy `tradingview/Index_Pair_Coach_Nifty_BankNifty.pine`
-2. TradingView → open **`NSE:BANKNIFTY`** chart
-3. Pine Editor → paste → Save → Add to chart
-4. Hedge symbol = **`NSE:NIFTY`**
-
-Indicator name on chart: **Index Pair Coach — Nifty×BankNifty** (`NB Pair Coach`)
-
-### Options rules (1 lot + 1 lot)
-| Signal | Trade |
-|--------|--------|
-| **LONG BN PAIR** | Buy 1L **BankNifty CE** + Buy 1L **Nifty PE** |
-| **SHORT BN PAIR** | Buy 1L **BankNifty PE** + Buy 1L **Nifty CE** |
-
-Only when dashboard **NEW ENTRY TODAY? = YES**.
-
-### Exit
-- Take profit `|Z| ≤ 0.5`
-- Stop `|Z| ≥ 3.5`
-- Time **10** bars  
-Close **both** legs together.
-
-### Tuned defaults (edge playbook)
-- Entry `|Z| ≥ 2`, `|corr| ≥ 0.70`
-- Half-life filter **OFF** (time stop does more work)
-- Both LONG BN and SHORT BN allowed
-
-Rough backtest (index 1:1 style, before costs): ~**60%+ win rate**, ~**2–4% residual / year** — modest. Long options usually earn less than that due to theta.
-
-### Daily scan (Chromebook)
+## What to run daily
 ```bash
 cd ~/new-idea
-git pull origin cursor/nifty-pair-trading-indicator-0959
 source .venv/bin/activate
-python scans/scan_nifty_banknifty.py
+python scans/compound_pair_system.py
 ```
 
----
+Full playbook: [`docs/COMPOUND_PAIR_SYSTEM.md`](docs/COMPOUND_PAIR_SYSTEM.md)
 
-## Secondary system: Stock × Nifty (larger capital / lot matching issues)
+## What it is
+- **10 active pairs** (Nifty–BankNifty, Nifty–FinNifty, banks, energy, IT, auto, pharma)
+- **Options debit spreads** (not naked CE+PE)
+- **Compounding**: profits raise package size
+- Max **3** pairs open at once
 
-| File | Purpose |
-|------|---------|
-| `tradingview/Nifty_Stock_Pair_Trader.pine` | Stock vs Nifty coach |
-| `scans/scan_nifty_pairs.py` | Stock universe scanner |
+## Research snapshot (₹4L start, ~5y proxy)
+- Win rate ~**64%**
+- Equity ~₹4.0L → ~₹5.2L  
+- CAGR ~**6%**, max DD ~**4%**
+- More trades / better stacking than single NB pair alone
 
-Use when capital can properly size the Nifty hedge.
+Honest: this builds capital steadily; it is not a get-rich-quick options lottery.
 
-## Disclaimer
-Education/research only. Options lose value to theta. Past signals ≠ future profits.
+## TradingView
+- Index pair: `tradingview/Index_Pair_Coach_Nifty_BankNifty.pine` (**NB Pair Coach**, debit-spread text)
+- Stock pairs: follow Python scanner recipes
+
+## Older tools
+- Stock×Nifty single-name scanner still in `scans/scan_nifty_pairs.py`
