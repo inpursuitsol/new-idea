@@ -1,86 +1,66 @@
-# Nifty × Stock Pair Trader (TradingView)
+# Nifty × Stock Pair Trader — Edge Playbook
 
-Simple-to-use pair trading toolkit for Indian markets. Chart the **stock**, hedge against **Nifty** (or a sector index).
+Simple pair-trading toolkit for Indian markets with **backtest-based defaults**.
 
 ## Files
 
 | File | Purpose |
 |------|---------|
-| `tradingview/Nifty_Stock_Pair_Trader.pine` | **Main indicator** — signals + dashboard |
-| `tradingview/Nifty_Stock_Pair_Strategy.pine` | Optional backtest of Z-score timing on the stock leg |
+| `tradingview/Nifty_Stock_Pair_Trader.pine` | **Main indicator + live trade coach dashboard** |
+| `tradingview/Nifty_Stock_Pair_Strategy.pine` | Optional TV strategy shell |
+| `scans/scan_nifty_pairs.py` | Daily stock scanner (same rules) |
 
-## Install (60 seconds)
+## Edge playbook rules (built-in defaults)
 
-1. Open [TradingView Pine Editor](https://www.tradingview.com/pine-script-editor/)
-2. Paste `Nifty_Stock_Pair_Trader.pine` → **Save** → **Add to chart**
-3. Open a stock chart, e.g. `NSE:RELIANCE`, `NSE:TCS`, `NSE:INFY`, `NSE:HDFCBANK`
-4. In indicator settings set **Pair Symbol** to `NSE:NIFTY`  
-   (or `NSE:NIFTYBANK` / a sector index for sector pairs)
+**Enter LONG PAIR only when ALL are PASS:**
+- Z ≤ **−2.0**
+- |Correlation| ≥ **0.80**
+- Half-life ≤ **8** bars
 
-## How to read it (only this matters)
+**Exit:**
+- Take profit: Z ≥ **−0.5**
+- Stop: Z ≤ **−4.0**
+- Time exit: **15** bars
 
-| Signal | Meaning | What to do |
-|--------|---------|------------|
-| **LONG PAIR** | Stock cheap vs Nifty | **Buy stock / Short Nifty** |
-| **SHORT PAIR** | Stock rich vs Nifty | **Short stock / Buy Nifty** |
-| **EXIT** | Spread mean-reverted (or stop) | Close both legs |
-| Dashboard **WEAK** | Correlation too low | Skip — pair not co-moving |
+**Skip shorts** by default (LONG-only mode).
 
-Default thresholds (prop-desk style):
+## How you know what to do while in a trade
 
-- Enter when **|Z| ≥ 2.0**
-- Exit when **|Z| ≤ 0.5**
-- Stop if **|Z| ≥ 3.5**
-- Require **|Correlation| ≥ 0.70**
+You don’t calculate anything by hand. Use the indicator dashboard on the stock chart:
 
-## What’s under the hood
+1. Open the stock (e.g. `NSE:M&M`)
+2. Add **Nifty Pair Pro** (Pair Symbol = `NSE:NIFTY`)
+3. Read the **LIVE TRADE COACH** table every day:
 
-Desk-style statistical arb, not a random oscillator mash-up:
+| Dashboard row | Meaning |
+|---------------|---------|
+| **TRADE STATUS** | Exact instruction: ENTER / HOLD / TAKE PROFIT / STOP OUT / TIME EXIT |
+| **Z-Score (live)** | Current Z — compare to TP / Stop rows |
+| **TP target Z** | When to book profit |
+| **Stop Z** | When to cut the trade |
+| **Bars Held / Max** | Time exit countdown (e.g. `7 / 15`) |
+| **ENTRY CHECKS** | PASS/FAIL for Z, Corr, Half-Life before entry |
+| **Hedge β** | Size Nifty ≈ β × stock notional |
 
-1. **Engle–Granger residual** — rolling OLS hedge ratio β so spread ≈ Stock − α − β·Nifty  
-2. **Kalman-filter β** (optional) — adaptive hedge when regimes shift  
-3. **Z-score** — standardized spread for mean-reversion entries  
-4. **Correlation filter** — block trades when the pair is not co-moving  
-5. **Ornstein–Uhlenbeck half-life** — rough holding-period guide (bars)  
-6. **Spread percentile + Bollinger** — extra context on residual extremes  
-7. **Log residual / ratio modes** — scale-aware alternatives to raw price residual  
+Also set TradingView alerts: **Enter Long Pair**, **Take Profit**, **Stop Out**, **Time Exit**.
 
-## Suggested defaults (India)
+## Install indicator
 
-| Timeframe | Lookback | Notes |
-|-----------|----------|--------|
-| 15m / 30m | 60–120 | Intraday stock vs Nifty futures / index |
-| 1H | 60–100 | Swing intraday |
-| Daily | 60–120 | Positional pairs |
+1. Copy `tradingview/Nifty_Stock_Pair_Trader.pine`
+2. TradingView → Pine Editor → Paste → Save → Add to chart
+3. Keep defaults (Edge Playbook group)
 
-Start with **Spread Model = Residual (OLS)** and **Hedge Ratio = Rolling OLS**.  
-Switch to **Kalman Filter** if β drifts a lot through earnings / regime changes.
+## Daily scanner (Chromebook Linux / any PC)
 
-## Position sizing (real pair)
-
-Hedge shares / lots with β from the dashboard:
-
-```text
-Nifty notional ≈ β × Stock notional
+```bash
+cd ~/new-idea
+python3 scans/scan_nifty_pairs.py
 ```
 
-Example: ₹5,00,000 stock long, β = 1.2 → short ≈ ₹6,00,000 Nifty (futures / ETF / index units).
+Shows actionable LONG pairs and saves `scans/nifty_pair_scan_latest.csv`.
 
-## Alerts
-
-Create alerts from the indicator:
-
-- Long Pair  
-- Short Pair  
-- Exit Pair  
-- Z Entry Level  
-
-Prefer **Once Per Bar Close** (matches the “Alerts Need Bar Close” setting).
-
-## Backtest note
-
-The strategy script marks long/short on the **stock chart only**. TradingView cannot natively mark-to-market a two-leg Nifty hedge in one strategy. Use it to validate **signal timing**; compute true pair PnL in a spreadsheet if you need both legs.
+Then open that stock on TradingView and manage the trade with the dashboard.
 
 ## Disclaimer
 
-For education and research. Pair trading carries divergence, borrow, and execution risk. Not investment advice.
+Research / education only. Past backtests ≠ future results. Prefer stock + Nifty futures/ETF hedge over short-dated options for this playbook.
