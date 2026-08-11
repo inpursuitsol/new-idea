@@ -1,66 +1,52 @@
-# Nifty × Stock Pair Trader — Edge Playbook
+# Index & Stock Pair Trading Toolkit (TradingView)
 
-Simple pair-trading toolkit for Indian markets with **backtest-based defaults**.
-
-## Files
+## Primary system (fits ₹4L / 1 lot options): Nifty × BankNifty
 
 | File | Purpose |
 |------|---------|
-| `tradingview/Nifty_Stock_Pair_Trader.pine` | **Main indicator + live trade coach dashboard** |
-| `tradingview/Nifty_Stock_Pair_Strategy.pine` | Optional TV strategy shell |
-| `scans/scan_nifty_pairs.py` | Daily stock scanner (same rules) |
+| **`tradingview/Index_Pair_Coach_Nifty_BankNifty.pine`** | **NB Pair Coach** indicator (use this) |
+| **`scans/scan_nifty_banknifty.py`** | Daily Nifty×BankNifty scanner |
 
-## Edge playbook rules (built-in defaults)
+### Install indicator
+1. Copy `tradingview/Index_Pair_Coach_Nifty_BankNifty.pine`
+2. TradingView → open **`NSE:BANKNIFTY`** chart
+3. Pine Editor → paste → Save → Add to chart
+4. Hedge symbol = **`NSE:NIFTY`**
 
-**Enter LONG PAIR only when ALL are PASS:**
-- Z ≤ **−2.0**
-- |Correlation| ≥ **0.80**
-- Half-life ≤ **8** bars
+Indicator name on chart: **Index Pair Coach — Nifty×BankNifty** (`NB Pair Coach`)
 
-**Exit:**
-- Take profit: Z ≥ **−0.5**
-- Stop: Z ≤ **−4.0**
-- Time exit: **15** bars
+### Options rules (1 lot + 1 lot)
+| Signal | Trade |
+|--------|--------|
+| **LONG BN PAIR** | Buy 1L **BankNifty CE** + Buy 1L **Nifty PE** |
+| **SHORT BN PAIR** | Buy 1L **BankNifty PE** + Buy 1L **Nifty CE** |
 
-**Skip shorts** by default (LONG-only mode).
+Only when dashboard **NEW ENTRY TODAY? = YES**.
 
-## How you know what to do while in a trade
+### Exit
+- Take profit `|Z| ≤ 0.5`
+- Stop `|Z| ≥ 4.0`
+- Time **15** bars  
+Close **both** legs together.
 
-You don’t calculate anything by hand. Use the indicator dashboard on the stock chart:
-
-1. Open the stock (e.g. `NSE:M&M`)
-2. Add **Nifty Pair Pro** (Pair Symbol = `NSE:NIFTY`)
-3. Read the **LIVE TRADE COACH** table every day:
-
-| Dashboard row | Meaning |
-|---------------|---------|
-| **TRADE STATUS** | Exact instruction: ENTER / HOLD / TAKE PROFIT / STOP OUT / TIME EXIT |
-| **Z-Score (live)** | Current Z — compare to TP / Stop rows |
-| **TP target Z** | When to book profit |
-| **Stop Z** | When to cut the trade |
-| **Bars Held / Max** | Time exit countdown (e.g. `7 / 15`) |
-| **ENTRY CHECKS** | PASS/FAIL for Z, Corr, Half-Life before entry |
-| **Hedge β** | Size Nifty ≈ β × stock notional |
-
-Also set TradingView alerts: **Enter Long Pair**, **Take Profit**, **Stop Out**, **Time Exit**.
-
-## Install indicator
-
-1. Copy `tradingview/Nifty_Stock_Pair_Trader.pine`
-2. TradingView → Pine Editor → Paste → Save → Add to chart
-3. Keep defaults (Edge Playbook group)
-
-## Daily scanner (Chromebook Linux / any PC)
-
+### Daily scan (Chromebook)
 ```bash
 cd ~/new-idea
-python3 scans/scan_nifty_pairs.py
+git pull origin cursor/nifty-pair-trading-indicator-0959
+source .venv/bin/activate
+python scans/scan_nifty_banknifty.py
 ```
 
-Shows actionable LONG pairs and saves `scans/nifty_pair_scan_latest.csv`.
+---
 
-Then open that stock on TradingView and manage the trade with the dashboard.
+## Secondary system: Stock × Nifty (larger capital / lot matching issues)
+
+| File | Purpose |
+|------|---------|
+| `tradingview/Nifty_Stock_Pair_Trader.pine` | Stock vs Nifty coach |
+| `scans/scan_nifty_pairs.py` | Stock universe scanner |
+
+Use when capital can properly size the Nifty hedge.
 
 ## Disclaimer
-
-Research / education only. Past backtests ≠ future results. Prefer stock + Nifty futures/ETF hedge over short-dated options for this playbook.
+Education/research only. Options lose value to theta. Past signals ≠ future profits.
