@@ -21,15 +21,15 @@ spreadMode = input.string("Log Residual (OLS)", "Spread Model", options=["Residu
 betaMode = input.string("Rolling OLS", "Hedge Ratio", options=["Rolling OLS", "Kalman Filter", "Fixed 1.0"], group=grpCore)
 lookback = input.int(60, "Lookback (bars)", minval=20, maxval=500, group=grpCore)
 
-grpPlay = "2) Playbook"
+grpPlay = "2) Playbook (tuned for edge)"
 tradeBothSides = input.bool(true, "Allow both LONG and SHORT BN pair", group=grpPlay, tooltip="ON = trade both directions. OFF = only when BankNifty is cheap (LONG BN pair).")
 zEntry = input.float(2.0, "Entry |Z|", minval=0.5, maxval=5.0, step=0.1, group=grpPlay)
 zExit = input.float(0.5, "Take-Profit |Z|", minval=0.0, maxval=3.0, step=0.1, group=grpPlay)
-zStop = input.float(4.0, "Stop |Z|", minval=1.0, maxval=8.0, step=0.1, group=grpPlay)
-minCorr = input.float(0.75, "Min |Correlation|", minval=0.0, maxval=0.99, step=0.05, group=grpPlay)
-maxHalfLife = input.float(10.0, "Max Half-Life (bars)", minval=1.0, maxval=60.0, step=0.5, group=grpPlay)
-maxHoldBars = input.int(15, "Max Hold (bars)", minval=3, maxval=60, group=grpPlay)
-useHlFilter = input.bool(true, "Require Half-Life Filter", group=grpPlay)
+zStop = input.float(3.5, "Stop |Z|", minval=1.0, maxval=8.0, step=0.1, group=grpPlay)
+minCorr = input.float(0.70, "Min |Correlation|", minval=0.0, maxval=0.99, step=0.05, group=grpPlay)
+maxHalfLife = input.float(15.0, "Max Half-Life (bars)", minval=1.0, maxval=60.0, step=0.5, group=grpPlay)
+maxHoldBars = input.int(10, "Max Hold (bars)", minval=3, maxval=60, group=grpPlay)
+useHlFilter = input.bool(false, "Require Half-Life Filter", group=grpPlay, tooltip="Tuned default OFF — time stop carries more of the edge.")
 alertOnConfirm = input.bool(true, "Alerts Need Bar Close", group=grpPlay)
 
 grpAdv = "3) Advanced"

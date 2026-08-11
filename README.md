@@ -25,9 +25,16 @@ Only when dashboard **NEW ENTRY TODAY? = YES**.
 
 ### Exit
 - Take profit `|Z| ≤ 0.5`
-- Stop `|Z| ≥ 4.0`
-- Time **15** bars  
+- Stop `|Z| ≥ 3.5`
+- Time **10** bars  
 Close **both** legs together.
+
+### Tuned defaults (edge playbook)
+- Entry `|Z| ≥ 2`, `|corr| ≥ 0.70`
+- Half-life filter **OFF** (time stop does more work)
+- Both LONG BN and SHORT BN allowed
+
+Rough backtest (index 1:1 style, before costs): ~**60%+ win rate**, ~**2–4% residual / year** — modest. Long options usually earn less than that due to theta.
 
 ### Daily scan (Chromebook)
 ```bash

@@ -18,13 +18,15 @@ import yfinance as yf
 
 warnings.filterwarnings("ignore")
 
+# Tuned defaults (walk-forward screened for edge)
 LOOKBACK = 60
 Z_ENTRY = 2.0
 Z_EXIT = 0.5
-Z_STOP = 4.0
-MIN_CORR = 0.75
-MAX_HALFLIFE = 10.0
-MAX_HOLD = 15
+Z_STOP = 3.5
+MIN_CORR = 0.70
+MAX_HALFLIFE = 15.0
+MAX_HOLD = 10
+USE_HL_FILTER = False
 
 NIFTY = "^NSEI"
 BANKNIFTY = "^NSEBANK"
@@ -68,7 +70,7 @@ def analyze(bn: pd.Series, nf: pd.Series) -> dict | None:
     hl = half_life(spread_w.values.astype(float))
 
     corr_ok = abs(corr) >= MIN_CORR
-    hl_ok = np.isfinite(hl) and 0 < hl <= MAX_HALFLIFE
+    hl_ok = (not USE_HL_FILTER) or (np.isfinite(hl) and 0 < hl <= MAX_HALFLIFE)
     filters_ok = corr_ok and hl_ok
 
     if z <= -Z_ENTRY and filters_ok:
@@ -117,8 +119,8 @@ def analyze(bn: pd.Series, nf: pd.Series) -> dict | None:
 
 
 def main() -> None:
-    print("NB PAIR COACH SCANNER — Nifty × BankNifty")
-    print(f"Enter |Z|>={Z_ENTRY}, |corr|>={MIN_CORR}, half-life≤{MAX_HALFLIFE}")
+    print("NB PAIR COACH SCANNER — Nifty × BankNifty (tuned)")
+    print(f"Enter |Z|>={Z_ENTRY}, |corr|>={MIN_CORR}, HL filter={'ON ≤'+str(MAX_HALFLIFE) if USE_HL_FILTER else 'OFF'}")
     print(f"Exit TP |Z|≤{Z_EXIT} | Stop |Z|≥{Z_STOP} | Time {MAX_HOLD} bars")
     print(f"{datetime.now(timezone.utc):%Y-%m-%d %H:%M} UTC\n")
 
