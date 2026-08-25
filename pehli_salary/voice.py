@@ -5,7 +5,7 @@ from pathlib import Path
 
 from pehli_salary.queue import QueueItem, voiceover_path
 
-EDGE_VOICE = "en-IN-PrabhatNeural"
+EDGE_VOICE = "en-IN-NeerjaExpressiveNeural"
 
 
 def synthesize(item: QueueItem, dest: Path) -> Path:
@@ -30,8 +30,8 @@ def _edge_tts(text: str, dest: Path) -> None:
         comm = edge_tts.Communicate(
             text,
             EDGE_VOICE,
-            rate="-12%",
-            pitch="-3Hz",
+            rate="-4%",
+            pitch="-1Hz",
         )
         await comm.save(str(dest))
 
