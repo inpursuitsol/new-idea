@@ -40,17 +40,34 @@ Do **not** create a new channel and do **not** switch Google accounts.
 
 ### 2. YouTube Studio, 15 minutes, so it does not look like a bot farm
 
-1. [studio.youtube.com](https://studio.youtube.com) → **Customization**.
-2. **Name**: leave **Anand** / **Contentlovers108**, or rename later. Do not create a second channel to match “Pehli Salary Club”.
-3. **Description** (paste or merge with what is already there):
+You land on **Dashboard** (house icon, currently selected). Name, description, icon, and banner are **not** on those cards. Use the **left sidebar**.
 
-   > Pehli naukri, pehle 5 saal. CTC vs in-hand, PF, HRA, UPI leaks, ghar ka UPI. Main CA nahi hoon. Jo maine khud seekha, wahi. Tumhara number alag ho sakta hai.
+**A. Look and About (Customization)**
 
-4. **Links**: none, or only LinkedIn if it is really you.
-5. **Channel icon**: a messy notebook photo you take on your phone. Not a Canva “finance logo”.
-6. **Banner**: same desk, 2560×1440, no neon AI gradient.
-7. **Settings → Channel → Advanced → default upload**: **No, it's not made for kids**.
-8. Country: India. Language: Hindi / English mixed is fine.
+1. Left sidebar, near the bottom, wand / sparkle icon: **Customization**.
+2. Open the **Profile** tab (sometimes labelled **Branding**).
+   - **Picture** = channel icon. Phone photo of a notebook. Not a Canva finance logo.
+   - **Banner image** = 2560×1440 desk photo. No neon AI gradient.
+3. Open the **Basic info** tab.
+   - **Name**: leave **Anand**. Do not create a second channel for “Pehli Salary Club”.
+   - **Handle**: keep `@Contentlovers108` if that is already set.
+   - **Description**: paste or merge:
+
+     > Pehli naukri, pehle 5 saal. CTC vs in-hand, PF, HRA, UPI leaks, ghar ka UPI. Main CA nahi hoon. Jo maine khud seekha, wahi. Tumhara number alag ho sakta hai.
+
+   - **Links**: none, or only LinkedIn if it is really you.
+4. Click **Publish** at the top right if Studio asks.
+
+**B. Kids flag, country, language (Settings gear)**
+
+1. Left sidebar, **very bottom**: gear **Settings**. A pop-up opens. This is not Customization.
+2. Left of the pop-up: **Channel** → **Basic info** → **Country**: India.
+3. Same pop-up: **Channel** → **Advanced settings** → audience / made for kids: this channel is **not** made for kids.
+4. Same pop-up: **Upload defaults** → **Audience**: **No, it's not made for kids**.
+5. **Upload defaults** → title/description language: Hindi or English is fine (Hinglish videos still work).
+6. Save / Done.
+
+Dashboard cards (Latest video, 0 views, Partner Program news) can be ignored for this step.
 
 ### 3. Google Cloud project + YouTube API
 
