@@ -30,6 +30,7 @@ def test_descriptions_carry_disclaimer_and_human_hook():
     assert "personal advice nahi" in text
     assert item.hook.rstrip(".") in text
     assert "#PehliSalary" not in text
+    assert "@Contentlovers108" in text
 
 
 def test_schedule_slots_are_ist_prime_time():

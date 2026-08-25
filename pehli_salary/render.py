@@ -5,7 +5,7 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageEnhance, ImageFilter, ImageFont
 
-from pehli_salary.config import OUTBOX
+from pehli_salary.config import CHANNEL_HANDLE, OUTBOX
 from pehli_salary.queue import QueueItem
 from pehli_salary.voice import synthesize
 
@@ -87,7 +87,7 @@ def _draw_frame(item: QueueItem, caption: str, idx: int, total: int, dest: Path)
         base_y += cap_font.size + 18 + rng.randint(-2, 4)
     if idx == total - 1:
         small = _font(FONT_ITAL, 28)
-        draw.text((80, h - 160), "pehli salary club", font=small, fill=MUTE)
+        draw.text((80, h - 160), CHANNEL_HANDLE, font=small, fill=MUTE)
     img = img.rotate(rng.uniform(-0.7, 0.7), resample=Image.Resampling.BICUBIC, fillcolor=PAPER)
     img = ImageEnhance.Contrast(img).enhance(0.96)
     img = img.filter(ImageFilter.SMOOTH)

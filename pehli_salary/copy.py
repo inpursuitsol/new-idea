@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from pehli_salary.config import DISCLAIMER
+from pehli_salary.config import CHANNEL_HANDLE, DISCLAIMER
 from pehli_salary.queue import QueueItem
 
 
@@ -16,6 +16,8 @@ def description_for(item: QueueItem) -> str:
         item.cta,
         "",
         "agar tumhara number alag hai (city, rent, company), comment mein likh dena. next wale mein use karunga.",
+        "",
+        f"{CHANNEL_HANDLE} · pehli naukri wala series, poora finance TV nahi.",
         "",
         DISCLAIMER,
     ]

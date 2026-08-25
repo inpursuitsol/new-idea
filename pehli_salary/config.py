@@ -14,3 +14,5 @@ DISCLAIMER = (
     "Yeh video general education hai, personal advice nahi. "
     "Tax/PF ke final decision ke liye apna CA / employer HR dekho."
 )
+CHANNEL_HANDLE = "@Contentlovers108"
+CHANNEL_URL = "https://www.youtube.com/@Contentlovers108"

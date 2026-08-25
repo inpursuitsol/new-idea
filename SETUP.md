@@ -13,7 +13,7 @@ Do **not** buy views, comments, or subscribers. That bans the channel before ads
 | # | You give me / set this | Why |
 | --- | --- | --- |
 | 1 | A Google account you control | Owns the Cloud project and the channel |
-| 2 | A YouTube channel (Brand Account is fine) | Place videos go |
+| 2 | YouTube channel **@Contentlovers108** (already created) | Place videos go. Do not open a second channel. |
 | 3 | YouTube Data API OAuth **Desktop** client | Lets the robot upload |
 | 4 | One browser login (`python3 -m pehli_salary.cli auth`) | Creates `refresh_token` |
 | 5 | Three GitHub Actions secrets | So cron can upload |
@@ -28,19 +28,21 @@ I already have scripts, captions, renderer, and the cron workflow in the repo. I
 
 ## Step by step
 
-### 1. Create the YouTube channel
+### 1. Use the channel you already have — @Contentlovers108
 
-1. Open [youtube.com](https://www.youtube.com) in Chrome, signed into **your** Google account.
-2. Click your photo → **Create a channel**.
-3. Use a Brand Account if you do not want your legal name on the channel.
-4. Name: `Pehli Salary Club` (or Hindi: `पहली सैलरी क्लब`). Handle: something like `@pehlisalary`.
-5. Do **not** use a face clone, a stock “Indian businessman” AI avatar, or someone else’s photos.
+Do **not** create a new channel and do **not** switch Google accounts.
+
+1. Open [youtube.com/@Contentlovers108](https://www.youtube.com/@Contentlovers108) while signed into the Google account that owns it (Studio currently shows the channel as **Anand** — that is fine).
+2. Confirm Studio → your photo → you can upload. That same login is what OAuth in step 4 must use. If you have several channels on the account, pick **Contentlovers108** in the channel switcher before you allow access.
+3. Keep the handle `@Contentlovers108`. You do not need `@pehlisalary`.
+4. Optional, later: change the **display name** from Anand to something clearer (`Contentlovers108` or `Pehli Salary Club`). Handle can stay. Skip this if you do not care.
+5. Do **not** add a face clone, a stock “Indian businessman” AI avatar, or someone else’s photos.
 
 ### 2. YouTube Studio, 15 minutes, so it does not look like a bot farm
 
 1. [studio.youtube.com](https://studio.youtube.com) → **Customization**.
-2. **Name**: Pehli Salary Club.
-3. **Description** (paste):
+2. **Name**: leave **Anand** / **Contentlovers108**, or rename later. Do not create a second channel to match “Pehli Salary Club”.
+3. **Description** (paste or merge with what is already there):
 
    > Pehli naukri, pehle 5 saal. CTC vs in-hand, PF, HRA, UPI leaks, ghar ka UPI. Main CA nahi hoon. Jo maine khud seekha, wahi. Tumhara number alag ho sakta hai.
 
@@ -53,11 +55,11 @@ I already have scripts, captions, renderer, and the cron workflow in the repo. I
 ### 3. Google Cloud project + YouTube API
 
 1. Open [Google Cloud Console](https://console.cloud.google.com/) with the **same** Google account that owns the channel.
-2. **New project**, name `pehli-salary-club`.
+2. **New project**, name `contentlovers108-uploader` (any name; this is the API project, not the YouTube title).
 3. **APIs & Services → Enable APIs** → enable **YouTube Data API v3**.
 4. **OAuth consent screen**:
    - User type: **External**.
-   - App name: `Pehli Salary Club Uploader`.
+   - App name: `Contentlovers108 Uploader`.
    - User support email: yours.
    - Developer contact: yours.
    - Scopes: add `https://www.googleapis.com/auth/youtube.upload`.
@@ -79,7 +81,7 @@ python3 -m pip install -r requirements.txt
 PYTHONPATH=. python3 -m pehli_salary.cli auth --client-secrets client_secret.json
 ```
 
-A browser window opens. Sign in as the **channel owner**. Click Allow.
+A browser window opens. Sign in as the **owner of @Contentlovers108**. If Google shows a channel picker, choose this channel. Click Allow.
 
 This writes `token.json` (gitignored). Open it and copy:
 
@@ -149,7 +151,7 @@ One sitting can cover a week (3 Shorts). That is how this stays automated **and*
 | --- | --- |
 | Action dry-runs even with `dry_run=false` | `YOUTUBE_REFRESH_TOKEN` secret missing or empty |
 | OAuth “access denied” | Channel Gmail not in Test users |
-| `uploadScope` / 403 | API not enabled, or you authed a different Google account than the channel |
+| `uploadScope` / 403 | API not enabled, or you authed a different Google account / a different channel than **@Contentlovers108** |
 | Quota | Default is enough for 1–2 uploads/day; do not burst |
 | Video looks empty / no audio | ffmpeg on the runner; already installed in the workflow |
 | Token dies after ~7 days | Only happens if the OAuth app stays in Testing **and** Google rotates; re-run step 4 and update the secret. Publishing the app for production (only you using it) also works if you are willing to go through Google’s form. |

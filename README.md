@@ -1,6 +1,10 @@
-# Pehli Salary Club
+# Contentlovers108
 
-Hinglish YouTube channel for Indians in their first job years: where the salary actually goes, CTC vs in-hand, PF, HRA, family UPI, increment politics. Faceless kinetic-text Shorts plus one Sunday long-form. Written like a cousin on WhatsApp, not a seminar.
+Existing YouTube channel: [youtube.com/@Contentlovers108](https://www.youtube.com/@Contentlovers108). Do not create a second channel.
+
+**Show / series on that channel:** first-job money in India (in-hand, PF, HRA, UPI leaks, family UPI, increment). Working title for the playlist: Pehli Salary Club. The theme is still that life, not “only payslips,” and not a new brand account.
+
+Hinglish Shorts plus one Sunday long-form. Written like a cousin on WhatsApp, not a seminar.
 
 ## Why this niche
 
