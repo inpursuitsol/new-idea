@@ -1,11 +1,11 @@
 name: Publish due Pehli Salary Club video
 
 on:
-  schedule:
-    # 19:30 IST = 14:00 UTC (Tue/Thu/Sat Shorts)
-    - cron: "0 14 * * 2,4,6"
-    # 10:00 IST = 04:30 UTC (Sunday long-form)
-    - cron: "30 4 * * 0"
+  # Automatic posting is off until a human-voice cut exists.
+  # Re-enable the cron lines below only after a watchable sample is approved.
+  # schedule:
+  #   - cron: "0 14 * * 2,4,6"
+  #   - cron: "30 4 * * 0"
   workflow_dispatch:
     inputs:
       date:

@@ -16,34 +16,26 @@ items:
     cta: "Agar yahi scene hai toh yahan ruk ja."
     tags: [pehli salary, UPI, saving, Indian salary, money leaks]
     spoken: >
-      Haan wait. 31 tarikh ko salary aayi thi na.
-      In hand, thirty eight thousand two hundred.
-      Aaj 4 tarikh hai. Balance, six thousand four hundred.
-      EMI abhi nahi kati. Rent 7 ko jayega.
-      Toh 32 hazar gaye kahan, bhai.
-      Bada kharcha nahi hua. Leaks hue.
-      Swiggy, Rapido, Zepto, dost ka hissa.
-      Chhota chhota, dikhta hi nahi.
-      Salary aate hi teen UPI pehle maaro. Rent. SIP. Ghar.
-      Jo bache, usko udaana. Usse pehle nahi.
-      Yahi scene hai toh yahan ruk ja.
+      31 tarikh ko salary aayi. In-hand, 38,200.
+      Aaj 4 tarikh hai. Balance, 6,400.
+      EMI nahi kati. Rent 7 ko nikalega.
+      32,000 gaye kahan.
+      Koi bada bill nahi tha. UPI leaks. Swiggy. Rapido. Zepto. Dost ka hissa.
+      Salary aate hi teen transfers pehle: rent, SIP, ghar.
+      Jo bache, uske baad.
     captions:
-      - "31 tarikh."
-      - "38,200 aaye"
-      - "aaj 4 tarikh"
-      - "balance 6,400"
-      - "EMI? abhi nahi"
-      - "rent 7 ko"
-      - "32k gaye kahan"
-      - "koi bada kharcha nahi"
-      - "Swiggy 180"
-      - "Rapido 67"
-      - "Zepto 240"
-      - "dost ka 500"
-      - "salary aate hi"
-      - "3 UPI pehle"
-      - "rent. SIP. ghar."
-      - "baaki... udaana"
+      - "31 TARIKH"
+      - "₹38,200 IN-HAND"
+      - "4 DIN BAAD"
+      - "₹6,400 LEFT"
+      - "NO EMI YET"
+      - "RENT ON THE 7TH"
+      - "₹32,000 GONE"
+      - "NOT ONE BIG BILL"
+      - "UPI LEAKS"
+      - "SWIGGY. RAPIDO. ZEPTO."
+      - "SALARY DAY: 3 UPI"
+      - "RENT. SIP. HOME."
 
   - id: s002
     kind: short
