@@ -5,7 +5,8 @@
 items:
   - id: s001
     kind: short
-    publish_on: "2026-08-27"
+    publish_on: "2026-08-26"
+    publish_time: "11:11"
     title: "Pehli salary aayi. 4 din baad gayi kahan?"
     hook: "31 tarikh ko 38,200 aaye. Aaj 4 tarikh hai. Balance 6,400."
     beats:

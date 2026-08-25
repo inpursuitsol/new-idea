@@ -34,18 +34,19 @@ def test_descriptions_carry_disclaimer_and_human_hook():
 
 
 def test_schedule_slots_are_ist_prime_time():
-    short = next(i for i in load_queue() if i.kind == "short")
+    first = load_queue()[0]
+    assert first.id == "s001"
+    assert first.publish_at().strftime("%Y-%m-%d %H:%M") == "2026-08-26 11:11"
+    later_short = next(i for i in load_queue() if i.kind == "short" and i.id != "s001")
     longform = next(i for i in load_queue() if i.kind == "longform")
-    assert short.publish_at().strftime("%H:%M") == "19:30"
+    assert later_short.publish_at().strftime("%H:%M") == "19:30"
     assert longform.publish_at().strftime("%H:%M") == "10:00"
-    assert str(short.publish_at().tzinfo) == "Asia/Kolkata"
+    assert str(first.publish_at().tzinfo) == "Asia/Kolkata"
 
 
 def test_due_lookup_by_calendar_day():
-    day = date(2026, 8, 27)
-    due = items_for_day(day)
-    assert [i.id for i in due] == ["s001"]
-    assert items_for_day(date(2026, 8, 26)) == []
+    assert [i.id for i in items_for_day(date(2026, 8, 26))] == ["s001"]
+    assert items_for_day(date(2026, 8, 27)) == []
 
 
 def test_today_ist_converts_utc():
@@ -64,17 +65,17 @@ def test_future_private_upload_gets_publish_at():
     from pehli_salary.youtube_client import build_status
 
     item = load_queue()[0]
-    future = datetime(2026, 8, 27, 10, 0, tzinfo=ZoneInfo("UTC"))
-    status = build_status(item, privacy="private", now=future)
+    before = datetime(2026, 8, 26, 4, 0, tzinfo=ZoneInfo("UTC"))
+    status = build_status(item, privacy="private", now=before)
     assert status["privacyStatus"] == "private"
-    assert status["publishAt"].startswith("2026-08-27T")
+    assert status["publishAt"] == "2026-08-26T05:41:00Z"
 
 
 def test_past_slot_goes_public():
     from pehli_salary.youtube_client import build_status
 
     item = load_queue()[0]
-    past = datetime(2026, 8, 28, tzinfo=ZoneInfo("UTC"))
+    past = datetime(2026, 8, 26, 8, 0, tzinfo=ZoneInfo("UTC"))
     status = build_status(item, privacy="private", now=past)
     assert status["privacyStatus"] == "public"
     assert "publishAt" not in status

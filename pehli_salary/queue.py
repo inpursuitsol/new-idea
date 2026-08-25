@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date, datetime, time
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
 import yaml
@@ -23,9 +24,12 @@ class QueueItem:
     tags: list[str]
     spoken: str | None = None
     captions: list[str] | None = None
+    publish_time: time | None = None
 
     @property
     def slot_time(self) -> time:
+        if self.publish_time is not None:
+            return self.publish_time
         if self.kind == "longform":
             return time(10, 0)
         return time(19, 30)
@@ -46,6 +50,13 @@ class QueueItem:
         for block in (self.hook, *self.beats, self.cta):
             chunks.extend(_split_caption(block))
         return chunks or [self.title]
+
+
+def _parse_clock(value) -> time | None:
+    if not value:
+        return None
+    hour, minute = str(value).strip().split(":")
+    return time(int(hour), int(minute))
 
 
 def _split_caption(text: str, max_words: int = 4) -> list[str]:
@@ -71,6 +82,7 @@ def load_queue(path=QUEUE_PATH) -> list[QueueItem]:
                 tags=list(row.get("tags") or []),
                 spoken=row.get("spoken"),
                 captions=list(row["captions"]) if row.get("captions") else None,
+                publish_time=_parse_clock(row.get("publish_time")),
             )
         )
     return items
