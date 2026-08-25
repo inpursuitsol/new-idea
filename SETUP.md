@@ -85,48 +85,69 @@ Dashboard cards (Latest video, 0 views, Partner Program news) can be ignored for
    - Application type: **Desktop app**.
    - Download JSON. Save it locally as `client_secret.json`. Never commit it. It is already gitignored.
 
-### 4. Generate the refresh token (once) — not on Penguin if you can avoid it
+### 4. Generate the refresh token on the Chromebook (once)
 
-This command starts a tiny web server and needs **Google login in Chrome**. It is **not** a good fit for the Chromebook **Penguin** Linux terminal:
+You only have a Chromebook. That is enough. Do **not** wait for a Windows/Mac PC.
 
-- Penguin is a VM. Its `localhost` is not the same as Chrome OS Chrome.
-- Penguin usually has no GUI browser, so the login page never appears.
-- `pip` inside Penguin is fine for other commands; this one is the exception.
+Google login must happen in a browser that can reach Linux `localhost`. Chrome OS Chrome usually cannot. Install **Chromium inside Penguin**, then run `auth` there. Linux GUI apps open as normal Chromebook windows.
 
-**Do this instead:** Windows, Mac, or a normal Ubuntu desktop — any machine where you already use Chrome to open [studio.youtube.com](https://studio.youtube.com) as **Anand / @Contentlovers108**.
+**A. One-time Penguin packages**
 
 ```bash
-git clone https://github.com/inpursuitsol/new-idea.git
-cd new-idea
-git checkout cursor/pehli-salary-youtube-bbab   # or main after merge
-python3 -m pip install -r requirements.txt
-# put client_secret.json in this folder (Downloads → copy into new-idea)
-PYTHONPATH=. python3 -m pehli_salary.cli auth --client-secrets client_secret.json
+sudo apt update
+sudo apt install -y python3-pip python3-venv git chromium ffmpeg fonts-noto-core
 ```
 
-Chrome should open. Sign in as the **owner of @Contentlovers108**. Allow. You should see `Wrote .../token.json`.
+If `chromium` is not found, try `chromium-browser` or `firefox-esr`. You need any GUI browser **inside Linux**, not the Chromebook’s top-of-screen Chrome.
 
-**If the Chromebook is all you have:** you can still try Penguin, but you must port-forward:
+**B. Put the OAuth JSON where Linux can see it**
 
-1. Chrome OS settings → Linux → Port forwarding → add port **8080**.
-2. In Penguin:
+In Chrome OS Files, download `client_secret.json` into **Downloads**. Penguin sees that as:
 
-   ```bash
-   PYTHONPATH=. python3 -m pehli_salary.cli auth --client-secrets client_secret.json --port 8080 --no-browser
-   ```
+`/mnt/chromeos/MyFiles/Downloads/client_secret.json`
 
-3. Copy the `https://accounts.google.com/...` URL from the terminal into **Chrome OS Chrome** (not a browser inside Linux).
-4. After you click Allow, Google redirects to `http://localhost:8080/...`. That only works if port 8080 was forwarded in step 1.
+**C. Clone, install, auth**
 
-If that redirect spins / connection refused, stop and run the same `auth` command on a Windows/Mac PC instead. You only need this once; then secrets live on GitHub.
+```bash
+cd ~
+git clone https://github.com/inpursuitsol/new-idea.git
+cd new-idea
+git checkout cursor/pehli-salary-youtube-bbab
+python3 -m pip install -r requirements.txt
+cp /mnt/chromeos/MyFiles/Downloads/client_secret.json .
+PYTHONPATH=. python3 -m pehli_salary.cli auth --client-secrets client_secret.json --port 8080
+```
 
-Open `token.json` (gitignored) and copy:
+A **Linux Chromium** window should open (shelf icon, not the Chrome OS Chrome you use for Studio). Sign in as the Google account that owns **@Contentlovers108**. If it asks which channel, pick that one. Click Allow.
 
-- `client_id`
-- `client_secret`
-- `refresh_token`
+Success looks like: `Wrote /home/…/new-idea/token.json`.
 
-If Google says the app is in testing, confirm the account is under Test users (step 3). If it shows a channel picker, choose **Contentlovers108**.
+Then:
+
+```bash
+python3 - <<'PY'
+import json
+from pathlib import Path
+data = json.loads(Path("token.json").read_text())
+print("YOUTUBE_CLIENT_ID=", data["client_id"])
+print("YOUTUBE_CLIENT_SECRET=", data["client_secret"])
+print("YOUTUBE_REFRESH_TOKEN=", data["refresh_token"])
+PY
+```
+
+Copy those three values into GitHub Actions secrets (step 5). Do not email them, do not commit `token.json`.
+
+**If no browser window opens:** the terminal still prints a `https://accounts.google.com/...` link. Open that link in the Linux Chromium window you launched with `chromium` from the same terminal. Do not paste it into Chrome OS Chrome unless you also enabled Linux **port forwarding for 8080** (Settings → Advanced → Developers → Linux → Port forwarding).
+
+**If apt cannot install a browser:** Settings → Linux → Port forwarding → TCP **8080**, then:
+
+```bash
+PYTHONPATH=. python3 -m pehli_salary.cli auth --client-secrets client_secret.json --port 8080 --no-browser
+```
+
+Paste the printed URL into **Chrome OS Chrome**. After Allow, it must land on `http://127.0.0.1:8080`. If that page errors, the browser-inside-Penguin path above is the one that works.
+
+You only need this login once. After secrets are on GitHub, daily posting does not use Penguin at all.
 
 ### 5. Put secrets on GitHub (this is what actually automates posting)
 

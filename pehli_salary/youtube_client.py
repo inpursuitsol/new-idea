@@ -60,7 +60,12 @@ def run_auth_flow(
         "from this terminal into Chrome (the same Google account that owns "
         "@Contentlovers108)."
     )
-    creds = flow.run_local_server(port=port, open_browser=open_browser)
+    creds = flow.run_local_server(
+        host="127.0.0.1",
+        port=port,
+        open_browser=open_browser,
+        bind_addr="127.0.0.1",
+    )
     dest = ROOT / "token.json"
     dest.write_text(creds.to_json(), encoding="utf-8")
     return dest
