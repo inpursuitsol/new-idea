@@ -33,17 +33,16 @@ Live upload cannot happen until you add YouTube OAuth secrets. **You do this onc
 ## Setup
 
 ```bash
-python3 -m pip install -r requirements.txt
-sudo apt-get install -y ffmpeg fonts-noto-core   # already on this image
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 export PYTHONPATH=.
-python3 -m pehli_salary.cli plan
-python3 -m pehli_salary.cli render --id s001
-python3 -m pehli_salary.cli publish-due --date 2026-08-27 --dry-run
+python -m pehli_salary.cli plan
 ```
 
 ### YouTube OAuth (once)
 
-Follow [SETUP.md](SETUP.md). Short version: Desktop OAuth client → `python3 -m pehli_salary.cli auth` → GitHub Actions secrets `YOUTUBE_CLIENT_ID`, `YOUTUBE_CLIENT_SECRET`, `YOUTUBE_REFRESH_TOKEN`.
+Follow [SETUP.md](SETUP.md). On a Chromebook, skip a second `git clone` if `~/new-idea` already exists; use a venv (`externally-managed-environment`); the Google file is `client_secret_*.json`, not always `client_secret.json`.
 
 Until those exist, `publish-due` prints the payload and exits 2 instead of uploading. Drop your own reads in `channel/voiceovers/{id}.mp3` if you want it to sound like you, not TTS.
 

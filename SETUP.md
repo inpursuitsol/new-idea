@@ -106,16 +106,50 @@ In Chrome OS Files, download `client_secret.json` into **Downloads**. Penguin se
 
 `/mnt/chromeos/MyFiles/Downloads/client_secret.json`
 
-**C. Clone, install, auth**
+**C. Do not clone again.** Your log already says `new-idea` exists. Debian also blocks `pip` on system Python (`externally-managed-environment`). Paste **this whole block** in Penguin:
 
 ```bash
-cd ~
-git clone https://github.com/inpursuitsol/new-idea.git
-cd new-idea
-git checkout cursor/pehli-salary-youtube-bbab
-python3 -m pip install -r requirements.txt
-cp /mnt/chromeos/MyFiles/Downloads/client_secret.json .
-PYTHONPATH=. python3 -m pehli_salary.cli auth --client-secrets client_secret.json --port 8080
+sudo apt install -y python3-venv python3-full git
+cd ~/new-idea
+git remote -v
+git fetch origin
+git checkout -B cursor/pehli-salary-youtube-bbab origin/cursor/pehli-salary-youtube-bbab
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+ls /mnt/chromeos/MyFiles/Downloads
+ls ~/Downloads
+```
+
+`ls` will show the real filename. Google does **not** save it as `client_secret.json`. It looks like:
+
+`client_secret_1234-abcd.apps.googleusercontent.com.json`
+
+Copy that name into the next command (tab-complete is fine):
+
+```bash
+cp /mnt/chromeos/MyFiles/Downloads/client_secret_*.json ./client_secret.json
+export PYTHONPATH=.
+python -m pehli_salary.cli auth --client-secrets client_secret.json --port 8080
+```
+
+Use `python` (the venv one), not `/usr/bin/python3`, and keep `source .venv/bin/activate` in that same terminal.
+
+If `ls /mnt/chromeos/MyFiles/Downloads` is empty: Chrome OS Files → select the JSON → right click → **Move to Linux files**, then:
+
+```bash
+ls ~/
+ls ~/Downloads
+find ~ -name '*client_secret*' 2>/dev/null
+```
+
+**Or** one script after you have pulled this branch:
+
+```bash
+cd ~/new-idea
+git fetch origin
+git checkout -B cursor/pehli-salary-youtube-bbab origin/cursor/pehli-salary-youtube-bbab
+bash scripts/chromebook-auth.sh
 ```
 
 A **Linux Chromium** window should open (shelf icon, not the Chrome OS Chrome you use for Studio). Sign in as the Google account that owns **@Contentlovers108**. If it asks which channel, pick that one. Click Allow.
