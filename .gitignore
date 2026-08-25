@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+outbox/
+*.mp4
+*.mp3
+token.json
+client_secret.json
+.env
+.DS_Store

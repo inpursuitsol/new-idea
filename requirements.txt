@@ -1,0 +1,7 @@
+gTTS==2.5.4
+google-api-python-client==2.179.0
+google-auth==2.40.3
+google-auth-oauthlib==1.2.2
+Pillow==11.3.0
+PyYAML==6.0.2
+pytest==8.4.1
