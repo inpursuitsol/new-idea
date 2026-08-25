@@ -4,13 +4,13 @@ set -euo pipefail
 
 REPO_URL="https://github.com/inpursuitsol/new-idea.git"
 BRANCH="cursor/pehli-salary-youtube-bbab"
-ROOT="${HOME}/new-idea"
+ROOT="${HOME}/youtube-uploader"
 
 sudo apt-get update -y
 sudo apt-get install -y python3-venv python3-full git
 
 if [ ! -d "${ROOT}/.git" ]; then
-  git clone "${REPO_URL}" "${ROOT}"
+  git clone -b cursor/pehli-salary-youtube-bbab https://github.com/inpursuitsol/new-idea.git "${ROOT}"
 fi
 
 cd "${ROOT}"
@@ -24,7 +24,7 @@ fi
 # shellcheck disable=SC1091
 source .venv/bin/activate
 pip install -U pip
-pip install -r requirements.txt
+pip install -r requirements-auth.txt
 
 SECRET=""
 for candidate in \

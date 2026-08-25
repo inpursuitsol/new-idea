@@ -130,15 +130,35 @@ ls
 
 You should see `SETUP.md`, `requirements.txt`, `pehli_salary`. You should **not** see `admin-applications.php` or `scans/`.
 
-**Step 3 — Python bubble (venv)**
+**Step 3 — free space, then a small install**
+
+Linux on a Chromebook is tiny. A full `requirements.txt` install can fill the disk (`No space left on device`). Login only needs two Google packages.
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+cd ~
+rm -rf ~/youtube-uploader/.venv
+rm -rf ~/.cache/pip
+sudo apt-get clean
+sudo apt-get autoremove -y
+df -h ~
 ```
 
-The left of the prompt should show `(.venv)`. You should **not** see `externally-managed-environment`.
+`Avail` (or “Available”) for `/home` should be more than about **500M**. If it is still almost 0:
+
+Chromebook **Settings → Advanced → Developers → Linux → Change disk size** — make it bigger (8 GB or more) → restart Linux → open Penguin again.
+
+Then:
+
+```bash
+cd ~/youtube-uploader
+git fetch origin
+git checkout -B cursor/pehli-salary-youtube-bbab origin/cursor/pehli-salary-youtube-bbab
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements-auth.txt
+```
+
+The prompt should show `(.venv)`. This install is small. Do **not** run `pip install -r requirements.txt` on the Chromebook.
 
 **Step 4 — Google JSON into Linux**
 
