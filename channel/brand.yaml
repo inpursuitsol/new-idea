@@ -15,11 +15,9 @@ voice:
     - Fake CA / SEBI-registered claims
     - Shame people for chai, gold, or sending money home
 palette:
-  bg: "#1A1410"
-  card: "#2A2118"
-  accent: "#E8A54B"
-  text: "#F4E8D4"
-  mute: "#A89880"
+  bg: "#E8DCC4"
+  ink: "#24201C"
+  highlight: "#FFE066"
 cadence:
   shorts_ist: "19:30"
   shorts_days: [Tue, Thu, Sat]

@@ -4,9 +4,12 @@ __pycache__/
 .pytest_cache/
 .coverage
 outbox/
-*.mp4
-*.mp3
 token.json
 client_secret.json
 .env
 .DS_Store
+*.mp4
+*.mp3
+!channel/voiceovers/*.mp3
+!channel/voiceovers/*.m4a
+!channel/voiceovers/*.wav

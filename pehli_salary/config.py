@@ -12,7 +12,5 @@ YOUTUBE_CATEGORY_EDUCATION = "27"
 SCOPES = ["https://www.googleapis.com/auth/youtube.upload"]
 DISCLAIMER = (
     "Yeh video general education hai, personal advice nahi. "
-    "Tax/PF ke final decision ke liye apna CA / employer HR dekho. "
-    "Produced explainer series — licensed CA nahi."
+    "Tax/PF ke final decision ke liye apna CA / employer HR dekho."
 )
-CHANNEL_HASHTAGS = "#PehliSalaryClub #SalaryIndia #Hinglish"

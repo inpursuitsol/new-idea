@@ -28,8 +28,8 @@ def test_descriptions_carry_disclaimer_and_human_hook():
     item = load_queue()[0]
     text = description_for(item)
     assert "personal advice nahi" in text
-    assert item.hook in text
-    assert "#" in text
+    assert item.hook.rstrip(".") in text
+    assert "#PehliSalary" not in text
 
 
 def test_schedule_slots_are_ist_prime_time():
@@ -56,7 +56,7 @@ def test_caption_chunks_are_short():
     item = load_queue()[0]
     chunks = item.caption_chunks()
     assert chunks
-    assert all(len(c.split()) <= 6 for c in chunks)
+    assert all(len(c.split()) <= 5 for c in chunks)
 
 
 def test_future_private_upload_gets_publish_at():
@@ -91,3 +91,26 @@ def test_queue_item_narration_is_spoken():
         tags=["a"],
     )
     assert item.narration() == "Hook one. Beat two. Subscribe."
+
+
+def test_spoken_overrides_concatenated_script():
+    item = QueueItem(
+        id="x",
+        kind="short",
+        publish_on=date(2026, 1, 1),
+        title="t",
+        hook="Hook one.",
+        beats=["Beat two."],
+        cta="Subscribe.",
+        tags=["a"],
+        spoken="Haan wait. Hook.",
+    )
+    assert item.narration() == "Haan wait. Hook."
+    assert load_queue()[0].spoken
+    assert load_queue()[0].captions
+
+
+def test_on_screen_captions_stay_short():
+    for item in load_queue():
+        for chunk in item.caption_chunks():
+            assert len(chunk.split()) <= 5, chunk

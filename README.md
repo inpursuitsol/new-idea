@@ -24,7 +24,7 @@ First six weeks of scripts live in `channel/queue.yaml`.
 3. **Publish** — YouTube Data API upload, scheduled to the IST slot (or public if the cron fires at/after that time).
 4. **GitHub Action** — same publish job on cron.
 
-Live upload cannot happen until you add YouTube OAuth secrets. Without them the action dry-runs.
+Live upload cannot happen until you add YouTube OAuth secrets. **You do this once; after that cron posts.** Exact clicks: [SETUP.md](SETUP.md).
 
 ## Setup
 
@@ -39,16 +39,9 @@ python3 -m pehli_salary.cli publish-due --date 2026-08-27 --dry-run
 
 ### YouTube OAuth (once)
 
-1. Google Cloud project → enable **YouTube Data API v3** → OAuth desktop client.
-2. Brand Account / channel (suggested name: **Pehli Salary Club**).
-3. Download `client_secret.json` to the repo root (gitignored).
-4. `python3 -m pehli_salary.cli auth --client-secrets client_secret.json`
-5. Put `client_id`, `client_secret`, and `refresh_token` in GitHub Actions secrets:
-   - `YOUTUBE_CLIENT_ID`
-   - `YOUTUBE_CLIENT_SECRET`
-   - `YOUTUBE_REFRESH_TOKEN`
+Follow [SETUP.md](SETUP.md). Short version: Desktop OAuth client → `python3 -m pehli_salary.cli auth` → GitHub Actions secrets `YOUTUBE_CLIENT_ID`, `YOUTUBE_CLIENT_SECRET`, `YOUTUBE_REFRESH_TOKEN`.
 
-Until those exist, `publish-due` prints the payload and exits 2 instead of uploading.
+Until those exist, `publish-due` prints the payload and exits 2 instead of uploading. Drop your own reads in `channel/voiceovers/{id}.mp3` if you want it to sound like you, not TTS.
 
 ## Monetization path (policy-safe)
 

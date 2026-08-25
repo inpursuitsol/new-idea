@@ -1,26 +1,29 @@
 from __future__ import annotations
 
-from pehli_salary.config import CHANNEL_HASHTAGS, DISCLAIMER
+from pehli_salary.config import DISCLAIMER
 from pehli_salary.queue import QueueItem
 
 
 def description_for(item: QueueItem) -> str:
+    # Looks like a person typed this in Studio, not a template dump.
     lines = [
-        item.hook,
+        item.hook.rstrip("."),
+        "",
+        "jo maine khud pehli naukri mein miss kiya, wahi hai.",
         "",
         *item.beats,
         "",
         item.cta,
         "",
-        DISCLAIMER,
+        "agar tumhara number alag hai (city, rent, company), comment mein likh dena. next wale mein use karunga.",
         "",
-        CHANNEL_HASHTAGS,
+        DISCLAIMER,
     ]
     return "\n".join(lines)
 
 
 def youtube_tags(item: QueueItem) -> list[str]:
-    base = ["pehli salary club", "Indian salary", "Hinglish finance", "first job India"]
+    base = ["pehli salary", "first job India", "in hand salary"]
     merged = []
     seen = set()
     for tag in [*item.tags, *base]:
@@ -28,7 +31,7 @@ def youtube_tags(item: QueueItem) -> list[str]:
         if key not in seen:
             seen.add(key)
             merged.append(tag)
-    return merged[:12]
+    return merged[:8]
 
 
 def validate_title(title: str) -> str:

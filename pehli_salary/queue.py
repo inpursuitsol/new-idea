@@ -21,6 +21,8 @@ class QueueItem:
     beats: list[str]
     cta: str
     tags: list[str]
+    spoken: str | None = None
+    captions: list[str] | None = None
 
     @property
     def slot_time(self) -> time:
@@ -32,17 +34,21 @@ class QueueItem:
         return datetime.combine(self.publish_on, self.slot_time, tzinfo=IST_TZ)
 
     def narration(self) -> str:
+        if self.spoken and self.spoken.strip():
+            return " ".join(self.spoken.split())
         parts = [self.hook, *self.beats, self.cta]
         return " ".join(part.strip() for part in parts)
 
     def caption_chunks(self) -> list[str]:
+        if self.captions:
+            return [c.strip() for c in self.captions if c and c.strip()]
         chunks: list[str] = []
         for block in (self.hook, *self.beats, self.cta):
             chunks.extend(_split_caption(block))
         return chunks or [self.title]
 
 
-def _split_caption(text: str, max_words: int = 6) -> list[str]:
+def _split_caption(text: str, max_words: int = 4) -> list[str]:
     words = text.split()
     if not words:
         return []
@@ -63,6 +69,8 @@ def load_queue(path=QUEUE_PATH) -> list[QueueItem]:
                 beats=list(row["beats"]),
                 cta=row["cta"],
                 tags=list(row.get("tags") or []),
+                spoken=row.get("spoken"),
+                captions=list(row["captions"]) if row.get("captions") else None,
             )
         )
     return items
@@ -78,3 +86,13 @@ def today_ist(now: datetime | None = None) -> date:
     if current.tzinfo is None:
         current = current.replace(tzinfo=IST_TZ)
     return current.astimezone(IST_TZ).date()
+
+
+def voiceover_path(item: QueueItem) -> Path | None:
+    from pehli_salary.config import CHANNEL_DIR
+
+    for ext in (".mp3", ".m4a", ".wav"):
+        candidate = CHANNEL_DIR / "voiceovers" / f"{item.id}{ext}"
+        if candidate.exists():
+            return candidate
+    return None
