@@ -1,0 +1,400 @@
+# First 6 weeks. Dates are Asia/Kolkata calendar days.
+# Shorts: Tue/Thu/Sat 19:30 IST. Long-form: Sunday 10:00 IST.
+# spoken = what the voice actually says (pauses via commas / ellipses).
+# captions = on-screen, 2–5 words, like someone highlighting a note.
+items:
+  - id: s001
+    kind: short
+    publish_on: "2026-08-27"
+    title: "Pehli salary aayi. 4 din baad gayi kahan?"
+    hook: "31 tarikh ko 38,200 aaye. Aaj 4 tarikh hai. Balance 6,400."
+    beats:
+      - "EMI abhi nahi kati. Rent 7 ko jayega. Phir 32 hazar gaye kahan?"
+      - "Bada kharcha nahi hua. Leaks hue. Swiggy 180. Rapido 67. Zepto 240. Dost ka hissa 500."
+      - "Salary aate hi 3 UPI pehle: rent, SIP, ghar. Jo bache, usko udaana. Usse pehle nahi."
+    cta: "Agar yahi scene hai toh yahan ruk ja."
+    tags: [pehli salary, UPI, saving, Indian salary, money leaks]
+    spoken: >
+      Haan wait. 31 tarikh ko salary aayi thi na.
+      In hand, thirty eight thousand two hundred.
+      Aaj 4 tarikh hai. Balance, six thousand four hundred.
+      EMI abhi nahi kati. Rent 7 ko jayega.
+      Toh 32 hazar gaye kahan, bhai.
+      Bada kharcha nahi hua. Leaks hue.
+      Swiggy, Rapido, Zepto, dost ka hissa.
+      Chhota chhota, dikhta hi nahi.
+      Salary aate hi teen UPI pehle maaro. Rent. SIP. Ghar.
+      Jo bache, usko udaana. Usse pehle nahi.
+      Yahi scene hai toh yahan ruk ja.
+    captions:
+      - "31 tarikh."
+      - "38,200 aaye"
+      - "aaj 4 tarikh"
+      - "balance 6,400"
+      - "EMI? abhi nahi"
+      - "rent 7 ko"
+      - "32k gaye kahan"
+      - "koi bada kharcha nahi"
+      - "Swiggy 180"
+      - "Rapido 67"
+      - "Zepto 240"
+      - "dost ka 500"
+      - "salary aate hi"
+      - "3 UPI pehle"
+      - "rent. SIP. ghar."
+      - "baaki... udaana"
+
+  - id: s002
+    kind: short
+    publish_on: "2026-08-29"
+    title: "CTC 8 LPA hai. In-hand itna nahi aata."
+    hook: "Offer letter pe 8 LPA. Pehle month ka credit 48,000. Dimag kharab."
+    beats:
+      - "CTC mein PF, gratuity, insurance, bonus — sab mix hota hai. Bank mein wahi aata hai jo in-hand hai."
+      - "Rough check: monthly CTC ka ~70–75% hi salary day pe dikhta hai, company ke hisaab se."
+      - "Agle offer pe yeh poochna: in-hand, PF share, joining bonus alag. CTC mat compare karna."
+    cta: "Agle offer pe in-hand poochna."
+    tags: [CTC vs in hand, 8 LPA, salary India, offer letter]
+    spoken: >
+      Offer letter pe eight L.P.A. likha tha.
+      Pehle month bank mein forty eight thousand.
+      Dimag kharab, haan.
+      CTC mein PF, gratuity, insurance, bonus, sab mix.
+      Bank mein wahi aata hai jo in hand hai.
+      Rough check... monthly CTC ka satar, pachhattar percent hi salary day pe dikhta hai.
+      Company pe depend karta hai.
+      Agle offer pe yeh poochna. In hand. PF share. Joining bonus alag.
+      CTC ko CTC se mat compare karna.
+    captions:
+      - "offer: 8 LPA"
+      - "bank: 48,000"
+      - "dimag kharab"
+      - "CTC = mix"
+      - "PF + bonus + insurance"
+      - "in-hand alag hota hai"
+      - "~70–75% dikhta hai"
+      - "agle offer pe"
+      - "in-hand poochna"
+      - "CTC vs CTC? mat"
+
+  - id: s003
+    kind: short
+    publish_on: "2026-09-01"
+    title: "PF ke paise 'nakam' nahi hain. Locked hain."
+    hook: "Payslip pe PF kat raha hai aur log kehte hain yeh toh waste hai."
+    beats:
+      - "Tumhara 12%, company ka 12%. Company wala free money hai, sirf naam alag hai."
+      - "Naukri chhodoge tab rules se nikalta hai. Beech mein UPI jaisa nahi."
+      - "UMANG / EPFO pe UAN link karo aaj. Password bhoolna normal hai, ignore karna mehnga."
+    cta: "Aaj UAN khol ke dekh."
+    tags: [EPFO, PF, UAN, salary slip India]
+    spoken: >
+      Payslip pe PF kat raha hai, aur log kehte hain yeh toh waste hai.
+      Nahi yaar.
+      Tumhara 12 percent. Company ka 12 percent.
+      Company wala free money hai. Sirf naam alag hai.
+      Naukri chhodoge tab rules se nikalta hai.
+      Beech mein UPI jaisa nahi hai yeh.
+      Aaj UMANG ya EPFO pe UAN link karo.
+      Password bhoolna normal hai. Ignore karna mehnga padta hai.
+    captions:
+      - "PF waste?"
+      - "nahi."
+      - "tumhara 12%"
+      - "company 12%"
+      - "woh free money hai"
+      - "locked hai, lost nahi"
+      - "UAN link karo"
+      - "aaj."
+
+  - id: s004
+    kind: short
+    publish_on: "2026-09-03"
+    title: "Mummy ne kaha LIC lo. Main ne kaha wait."
+    hook: "Pehli salary pe agent ghar aa jata hai. Coffee, form, 'beta future'."
+    beats:
+      - "LIC kharab nahi. Mixing kharab hai. Insurance alag, investment alag."
+      - "Term plan sasta padta hai cover ke hisaab se. Endowment mein kaam ka cover chhota, lock-in lamba."
+      - "Is mahine sirf yeh: company health card padh lo. Phir LIC. Pehle nahi."
+    cta: "Pehle health card padh, phir agent."
+    tags: [LIC, term insurance, Indian family money]
+    spoken: >
+      Pehli salary pe agent ghar aa jata hai.
+      Coffee, form, beta future.
+      LIC kharab nahi hai. Mixing kharab hai.
+      Insurance alag. Investment alag.
+      Term plan cover ke hisaab se sasta padta hai.
+      Endowment mein kaam ka cover chhota, lock in lamba.
+      Is mahine sirf yeh karo. Company health card padh lo.
+      Phir LIC. Pehle nahi.
+    captions:
+      - "agent aa gaya"
+      - '"beta, future"'
+      - "LIC kharab nahi"
+      - "mixing kharab hai"
+      - "insurance ≠ investment"
+      - "pehle health card"
+      - "phir LIC"
+
+  - id: s005
+    kind: short
+    publish_on: "2026-09-05"
+    title: "HRA nikalna padhai nahi, arithmetic hai."
+    hook: "Rent de rahe ho aur ITR pe HRA chhod rahe ho. Yeh silently mehnga hai."
+    beats:
+      - "Teen numbers: rent, basic, city. Formula boring hai. Result nahi."
+      - "Landlord PAN, rent receipt, rent agreement. WhatsApp screenshot kaam nahi karega."
+      - "June se folder banao, March mein mat dhundhna. Tax season pe dimag kharab hota hai."
+    cta: "June se folder. March mein mat dhundhna."
+    tags: [HRA, ITR, rent, tax saving India]
+    spoken: >
+      Rent de rahe ho, aur ITR pe HRA chhod rahe ho.
+      Yeh silently mehnga hai.
+      Teen numbers. Rent, basic, city.
+      Formula boring hai. Result nahi.
+      Landlord PAN, rent receipt, agreement.
+      WhatsApp screenshot kaam nahi karega, bhai.
+      June se folder banao. March mein mat dhundhna.
+      Tax season pe dimag kharab hota hai.
+    captions:
+      - "rent de rahe ho?"
+      - "HRA chhod rahe ho?"
+      - "silently mehnga"
+      - "rent / basic / city"
+      - "PAN + receipt"
+      - "WhatsApp proof? nahi"
+      - "June se folder"
+
+  - id: lf001
+    kind: longform
+    publish_on: "2026-08-30"
+    title: "Pehli salary ke 30 din: kahan ruki, kahan risi, kya rakho"
+    hook: "Main 2019 wali pehli salary ko defend nahi karunga. Usse better plan dunga."
+    beats:
+      - "Day 1–2: screenshot of payslip, in-hand, PF, professional tax. Excel nahi, Notes app."
+      - "Day 3: three buckets — ghar, future, zindagi. Percentages city ke hisaab se, guilt ke hisaab se nahi."
+      - "Day 7: one automation. SIP 500 bhi chalega. Zero se 500 bada jump hai."
+      - "Day 15: UPI statement print. Categories, not shame. Chai allowed. Daily 3 Swiggy nahi."
+      - "Day 30: one conversation at home. Kitna bhejoge, kitna nahi. Clear is kinder."
+    cta: "City comment kar dena. Next week uska rent plus food math."
+    tags: [pehli salary, budget India, SIP, UPI]
+    spoken: >
+      Main 2019 wali pehli salary ko defend nahi karunga. Usse better plan dunga.
+      Day one, two. Payslip ka screenshot. In hand, PF, professional tax. Excel nahi. Notes app.
+      Day three. Teen buckets. Ghar, future, zindagi. Percentages city ke hisaab se. Guilt ke hisaab se nahi.
+      Day seven. Ek automation. SIP five hundred bhi chalega. Zero se five hundred bada jump hai.
+      Day fifteen. UPI statement nikaalo. Categories, shame nahi. Chai allowed. Daily teen Swiggy nahi.
+      Day thirty. Ghar pe ek baat. Kitna bhejoge, kitna nahi. Clear is kinder.
+      Apni city comment kar dena. Next week uska rent plus food math.
+    captions:
+      - "2019 wali salary"
+      - "defend nahi karunga"
+      - "day 1: payslip pic"
+      - "Notes app, Excel nahi"
+      - "3 buckets"
+      - "ghar / future / zindagi"
+      - "day 7: SIP 500"
+      - "zero se 500"
+      - "day 15: UPI print"
+      - "chai ok. 3 Swiggy nahi"
+      - "day 30: ghar pe baat"
+      - "kitna bhejoge, clear"
+
+  - id: s006
+    kind: short
+    publish_on: "2026-09-08"
+    title: "Credit card pehli salary pe? Seedha jawab."
+    hook: "Bank wala kehta hai 'limit mil gayi'. Woh sales hai, favour nahi."
+    beats:
+      - "Card tab lo jab poora bill auto-debit ho salary account se. EMI trap alag cheez hai."
+      - "Reward points se pizza nahi, annual fee se bacho pehle."
+      - "Agar UPI pe already leak hai, card uss leak ko steroid dega. Pehle leaks band."
+    cta: "Pehle UPI leaks band, phir card."
+    tags: [credit card India, first job, UPI]
+    spoken: >
+      Bank wala kehta hai, limit mil gayi.
+      Woh sales hai. Favour nahi.
+      Card tab lo jab poora bill salary account se auto debit ho.
+      EMI trap alag cheez hai.
+      Reward points se pizza nahi. Pehle annual fee se bacho.
+      Agar UPI pe already leak hai, card uss leak ko steroid dega.
+      Pehle leaks band. Phir card.
+    captions:
+      - '"limit mil gayi"'
+      - "woh sales hai"
+      - "card tab"
+      - "jab auto-debit ho"
+      - "EMI trap alag hai"
+      - "UPI leak + card"
+      - "= steroid"
+      - "pehle leaks band"
+
+  - id: s007
+    kind: short
+    publish_on: "2026-09-10"
+    title: "Increment 8% aaya. Khushi 8% nahi honi chahiye."
+    hook: "HR mail: congratulations, 8 percent. LinkedIn pe smile. Excel pe nahi."
+    beats:
+      - "Inflation + switching cost. 8% kabhi kabhi stay bonus hai, raise nahi."
+      - "Market check: same role, next city, 2 recruiter chats. Drama nahi, data."
+      - "Counter nahi dena hai har baar. Number pata hona hai. Wahi power hai."
+    cta: "Number pata ho. Mail optional."
+    tags: [increment, hike, switch job India]
+    spoken: >
+      HR mail. Congratulations, eight percent.
+      LinkedIn pe smile. Excel pe nahi.
+      Inflation plus switching cost.
+      Eight percent kabhi kabhi stay bonus hai. Raise nahi.
+      Market check. Same role, next city, do recruiter chats.
+      Drama nahi. Data.
+      Counter nahi dena hai har baar. Number pata hona hai. Wahi power hai.
+    captions:
+      - "HR: 8%"
+      - "LinkedIn smile"
+      - "Excel nahi"
+      - "8% = stay bonus?"
+      - "2 recruiter chats"
+      - "drama nahi, data"
+      - "number pata ho"
+
+  - id: s008
+    kind: short
+    publish_on: "2026-09-12"
+    title: "Ghar pe paise bhejna weakness nahi hai."
+    hook: "Finance Instagram kehta hai 'pay yourself first'. Ghar wale bhi khud ho."
+    beats:
+      - "Amount fix karo, mood nahi. 8 tarikh ko UPI, 22 ko 'is mahine tight hai' mat."
+      - "Jo bhej rahe ho usko budget ke line item banao. Secret nahi, system."
+      - "Agar 40% jaa raha hai, baat karo. Ghosting se rishta bhi tootega, saving bhi."
+    cta: "Fix amount. Mood nahi."
+    tags: [family money, UPI home, Indian household]
+    spoken: >
+      Finance Instagram kehta hai, pay yourself first.
+      Ghar wale bhi khud ho yaar.
+      Amount fix karo. Mood nahi.
+      8 tarikh ko UPI. 22 ko, is mahine tight hai, mat.
+      Jo bhej rahe ho, usko budget ke line item banao.
+      Secret nahi. System.
+      Agar 40 percent jaa raha hai, baat karo.
+      Ghosting se rishta bhi tootega, saving bhi.
+    captions:
+      - "pay yourself first?"
+      - "ghar wale bhi khud"
+      - "amount fix"
+      - "mood nahi"
+      - "8 tarikh ko UPI"
+      - "line item banao"
+      - "40% ja raha?"
+      - "baat karo"
+
+  - id: s009
+    kind: short
+    publish_on: "2026-09-15"
+    title: "Form 16 aaya. Panic mat karo."
+    hook: "PDF kholi. Numbers. Panic. Close. Yeh loop March tak chalta hai."
+    beats:
+      - "Form 16 Part A: kya kat chuka. Part B: kya banana hai ITR mein."
+      - "Agar job switch kiya, do Form 16. Ek se ITR adhoora padta hai."
+      - "ITR-1 vs ITR-2 ka decision 10 minute ka hai. CA optional, copy-paste nahi."
+    cta: "Do Form 16 ho toh dono rakhna."
+    tags: [Form 16, ITR, tax India]
+    spoken: >
+      PDF kholi. Numbers. Panic. Close.
+      Yeh loop March tak chalta hai.
+      Form 16 Part A, kya kat chuka. Part B, kya banana hai ITR mein.
+      Agar job switch kiya, do Form 16. Ek se ITR adhoora padta hai.
+      ITR 1 versus ITR 2 ka decision 10 minute ka hai.
+      CA optional hai. Copy paste nahi.
+    captions:
+      - "PDF kholi"
+      - "panic. close."
+      - "Part A = kat chuka"
+      - "Part B = ITR"
+      - "switch? 2 Form 16"
+      - "10 minute decision"
+      - "copy-paste mat"
+
+  - id: s010
+    kind: short
+    publish_on: "2026-09-17"
+    title: "Gold vs SIP. Shaadi wale uncle ko jawab."
+    hook: "Uncle: gold safe hai. Tum: SIP. Dono incomplete sentence hain."
+    beats:
+      - "Gold family event + emergency mindset. SIP 10 saal wala kaam. Same bucket mat banao."
+      - "Jo 6 mahine mein nikalna hai, usko market mein mat daalo. FD bore karti hai, kaam karti hai."
+      - "Ek line: shaadi gold, future SIP. Mix karoge toh dono gusse mein."
+    cta: "Shaadi gold. Future SIP."
+    tags: [gold vs SIP, mutual funds India, family]
+    spoken: >
+      Uncle kehta hai gold safe hai. Tum kehte ho SIP.
+      Dono incomplete sentence hain.
+      Gold family event aur emergency mindset.
+      SIP 10 saal wala kaam.
+      Same bucket mat banao.
+      Jo 6 mahine mein nikalna hai, usko market mein mat daalo.
+      FD bore karti hai. Kaam karti hai.
+      Ek line. Shaadi gold. Future SIP.
+      Mix karoge toh dono gusse mein.
+    captions:
+      - "uncle: gold safe"
+      - "tum: SIP"
+      - "dono incomplete"
+      - "alag buckets"
+      - "6 month money?"
+      - "FD. bore, useful."
+      - "shaadi = gold"
+      - "future = SIP"
+
+  - id: s011
+    kind: short
+    publish_on: "2026-09-19"
+    title: "Office canteen vs dabba. Actual math."
+    hook: "Canteen 90. Bahar 220. Mahine ka farq ek SIP hai."
+    beats:
+      - "22 office days × 130 extra = 2,860. Woh 500 SIP nahi, 2,800 SIP hai."
+      - "Dabba boring hai. Har roz nahi. Hafte mein 3 din kaafi hai."
+      - "Health lecture nahi de raha. Number de raha hoon. Choice tumhari."
+    cta: "Apna canteen rate bhej dena."
+    tags: [office lunch, save money India, SIP]
+    spoken: >
+      Canteen 90. Bahar 220.
+      Mahine ka farq ek SIP hai.
+      22 office days, 130 extra, 2860.
+      Woh 500 SIP nahi. 2800 SIP hai.
+      Dabba boring hai. Har roz nahi. Hafte mein 3 din kaafi hai.
+      Health lecture nahi de raha. Number de raha hoon. Choice tumhari.
+    captions:
+      - "canteen 90"
+      - "bahar 220"
+      - "22 days × 130"
+      - "= 2,860"
+      - "yeh 500 SIP nahi"
+      - "2,800 SIP hai"
+      - "hafte mein 3 dabba"
+      - "choice tumhari"
+
+  - id: s012
+    kind: short
+    publish_on: "2026-09-22"
+    title: "Notice period pe PF mat bhoolna."
+    hook: "Relieving letter mila. Laptop wapas. PF ka socha nahi."
+    beats:
+      - "UAN same rehna chahiye. Nayi company ko pehle din do. Naya UAN mat banwana."
+      - "Transfer vs withdrawal. Jaldi cash ke chakkar mein compounding mar jaati hai."
+      - "Exit se pehle: Form 16 till date, leftover leaves, gratuity eligibility."
+    cta: "Naya UAN mat banwana."
+    tags: [job switch, PF transfer, notice period]
+    spoken: >
+      Relieving letter mila. Laptop wapas. PF ka socha nahi.
+      UAN same rehna chahiye.
+      Nayi company ko pehle din do. Naya UAN mat banwana.
+      Transfer versus withdrawal.
+      Jaldi cash ke chakkar mein compounding mar jaati hai.
+      Exit se pehle. Form 16 till date. Leftover leaves. Gratuity eligibility.
+    captions:
+      - "laptop wapas"
+      - "PF? socha nahi"
+      - "UAN same rakho"
+      - "naya UAN? mat"
+      - "transfer > withdrawal"
+      - "Form 16 till date"

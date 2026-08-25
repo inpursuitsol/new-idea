@@ -1,0 +1,46 @@
+name: Publish due Pehli Salary Club video
+
+on:
+  schedule:
+    # 19:30 IST = 14:00 UTC (Tue/Thu/Sat Shorts)
+    - cron: "0 14 * * 2,4,6"
+    # 10:00 IST = 04:30 UTC (Sunday long-form)
+    - cron: "30 4 * * 0"
+  workflow_dispatch:
+    inputs:
+      date:
+        description: IST calendar day YYYY-MM-DD (empty = today IST)
+        required: false
+      dry_run:
+        description: "true to skip YouTube upload"
+        required: false
+        default: "false"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: System deps
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg fonts-noto-core fonts-noto
+      - name: Python deps
+        run: pip install -r requirements.txt
+      - name: Tests
+        run: PYTHONPATH=. python -m pytest -q
+      - name: Publish due
+        env:
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+        run: |
+          EXTRA=()
+          if [ -n "${{ inputs.date }}" ]; then
+            EXTRA+=(--date "${{ inputs.date }}")
+          fi
+          if [ "${{ inputs.dry_run }}" = "true" ] || [ -z "$YOUTUBE_REFRESH_TOKEN" ]; then
+            EXTRA+=(--dry-run)
+          fi
+          PYTHONPATH=. python -m pehli_salary.cli publish-due "${EXTRA[@]}"

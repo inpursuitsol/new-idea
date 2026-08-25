@@ -1,0 +1,4 @@
+channel/voiceovers/*.mp3
+channel/voiceovers/*.m4a
+channel/voiceovers/*.wav
+!channel/voiceovers/.gitkeep

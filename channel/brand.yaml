@@ -1,0 +1,34 @@
+name: Contentlovers108
+handle: "@Contentlovers108"
+url: https://www.youtube.com/@Contentlovers108
+series: Pehli Salary Club
+tagline: Pehli naukri se pehle 5 saal tak, paisa kahan ghista hai.
+language: Hinglish
+audience:
+  who: 21–32, first job or first increment, India (tier-1 and tier-2)
+  moment: salary credit, ITR week, PF confusion, family money talk
+voice:
+  persona: Bada cousin jo CA nahi hai, lekin Form 16 dekh ke rone ke baad seekha.
+  do:
+    - Specific rupee amounts, dates, app names
+    - Mid-thought starts, short sentences, one joke max
+    - Talk like WhatsApp, not a seminar
+  dont:
+    - "Let's dive in", game-changer, unlock, journey, guys
+    - Fake CA / SEBI-registered claims
+    - Shame people for chai, gold, or sending money home
+palette:
+  bg: "#E8DCC4"
+  ink: "#24201C"
+  highlight: "#FFE066"
+cadence:
+  shorts_ist: "19:30"
+  shorts_days: [Tue, Thu, Sat]
+  longform_ist: "10:00"
+  longform_days: [Sun]
+monetization:
+  near_term: YouTube Partner Program via Shorts subs + Sunday watch time
+  later: disclosed affiliates (broker/credit card only after YPP), no fake gurus
+disclaimer: >
+  Yeh video general education hai, personal advice nahi. Tax/PF ke final
+  decision ke liye apna CA / employer HR dekho.
