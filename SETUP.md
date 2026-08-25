@@ -106,60 +106,87 @@ In Chrome OS Files, download `client_secret.json` into **Downloads**. Penguin se
 
 `/mnt/chromeos/MyFiles/Downloads/client_secret.json`
 
-**C. Do not clone again.** Your log already says `new-idea` exists. Debian also blocks `pip` on system Python (`externally-managed-environment`). Paste **this whole block** in Penguin:
+**C. Use a new folder.** Your existing `~/new-idea` has other files (Nifty CSVs, PHP). Do not switch branches there. Leave that folder alone.
+
+Do these **one at a time**. After each, you should see something like the “You should see” line. If you do not, stop and paste that terminal text back.
+
+**Step 1 — tools**
 
 ```bash
-sudo apt install -y python3-venv python3-full git
-cd ~/new-idea
-git remote -v
-git fetch origin
-git checkout -B cursor/pehli-salary-youtube-bbab origin/cursor/pehli-salary-youtube-bbab
+sudo apt update
+sudo apt install -y python3-venv python3-full git chromium
+```
+
+You should see lots of “Get:” / “Unpacking” lines, then the prompt again. If `chromium` fails, run: `sudo apt install -y firefox-esr`
+
+**Step 2 — new empty folder (not ~/new-idea)**
+
+```bash
+cd ~
+git clone -b cursor/pehli-salary-youtube-bbab https://github.com/inpursuitsol/new-idea.git youtube-uploader
+cd youtube-uploader
+ls
+```
+
+You should see `SETUP.md`, `requirements.txt`, `pehli_salary`. You should **not** see `admin-applications.php` or `scans/`.
+
+**Step 3 — Python bubble (venv)**
+
+```bash
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-ls /mnt/chromeos/MyFiles/Downloads
-ls ~/Downloads
 ```
 
-`ls` will show the real filename. Google does **not** save it as `client_secret.json`. It looks like:
+The left of the prompt should show `(.venv)`. You should **not** see `externally-managed-environment`.
 
-`client_secret_1234-abcd.apps.googleusercontent.com.json`
+**Step 4 — Google JSON into Linux**
 
-Copy that name into the next command (tab-complete is fine):
+Chrome OS **Files** app (the folder icon, not the terminal):
+
+1. Find the file you downloaded from Google Cloud. Name starts with `client_secret_` and ends with `.json`.
+2. Right-click it → **Move to Linux files** (or drag it onto **Linux files** in the left column).
+3. If you do not see **Linux files**, turn on Linux: Settings → Advanced → Developers → Linux.
+
+Back in the **same** terminal (prompt still has `(.venv)`):
 
 ```bash
-cp /mnt/chromeos/MyFiles/Downloads/client_secret_*.json ./client_secret.json
+cd ~/youtube-uploader
+ls ~
+find ~ -name '*client_secret*' 2>/dev/null
+```
+
+You should see a path printed. Copy that file in:
+
+```bash
+cp ~/client_secret_*.json ~/youtube-uploader/client_secret.json
+```
+
+If `cp` says “cannot stat”, the JSON is in a subfolder. Run `find ~ -name '*client_secret*'` and use **that full path**:
+
+```bash
+cp "/the/full/path/from/find.json" ~/youtube-uploader/client_secret.json
+```
+
+**Step 5 — Google login**
+
+```bash
+cd ~/youtube-uploader
+source .venv/bin/activate
 export PYTHONPATH=.
 python -m pehli_salary.cli auth --client-secrets client_secret.json --port 8080
 ```
 
-Use `python` (the venv one), not `/usr/bin/python3`, and keep `source .venv/bin/activate` in that same terminal.
+A Linux browser window should open. Sign in as **@Contentlovers108**. Click Allow.
 
-If `ls /mnt/chromeos/MyFiles/Downloads` is empty: Chrome OS Files → select the JSON → right click → **Move to Linux files**, then:
+You should see: `Wrote .../token.json`
 
-```bash
-ls ~/
-ls ~/Downloads
-find ~ -name '*client_secret*' 2>/dev/null
-```
-
-**Or** one script after you have pulled this branch:
+**Step 6 — print the three secrets** (venv still on)
 
 ```bash
-cd ~/new-idea
-git fetch origin
-git checkout -B cursor/pehli-salary-youtube-bbab origin/cursor/pehli-salary-youtube-bbab
-bash scripts/chromebook-auth.sh
-```
-
-A **Linux Chromium** window should open (shelf icon, not the Chrome OS Chrome you use for Studio). Sign in as the Google account that owns **@Contentlovers108**. If it asks which channel, pick that one. Click Allow.
-
-Success looks like: `Wrote /home/…/new-idea/token.json`.
-
-Then:
-
-```bash
-python3 - <<'PY'
+cd ~/youtube-uploader
+source .venv/bin/activate
+python - <<'PY'
 import json
 from pathlib import Path
 data = json.loads(Path("token.json").read_text())
@@ -169,17 +196,19 @@ print("YOUTUBE_REFRESH_TOKEN=", data["refresh_token"])
 PY
 ```
 
-Copy those three values into GitHub Actions secrets (step 5). Do not email them, do not commit `token.json`.
+Put those three lines into GitHub → Settings → Secrets → Actions (step 5 below).
 
-**If no browser window opens:** the terminal still prints a `https://accounts.google.com/...` link. Open that link in the Linux Chromium window you launched with `chromium` from the same terminal. Do not paste it into Chrome OS Chrome unless you also enabled Linux **port forwarding for 8080** (Settings → Advanced → Developers → Linux → Port forwarding).
+Never run `git checkout` inside the old `~/new-idea` folder. That is a different project.
 
-**If apt cannot install a browser:** Settings → Linux → Port forwarding → TCP **8080**, then:
+**If no browser window opens:** the terminal still prints a `https://accounts.google.com/...` link. In Penguin type `chromium` (or `firefox-esr`) so a Linux window appears, then paste that link **into that window**, not into Chrome OS Chrome.
+
+**If there is no Linux browser:** Chromebook Settings → Advanced → Developers → Linux → Port forwarding → TCP **8080**, then from `~/youtube-uploader` with venv on:
 
 ```bash
-PYTHONPATH=. python3 -m pehli_salary.cli auth --client-secrets client_secret.json --port 8080 --no-browser
+python -m pehli_salary.cli auth --client-secrets client_secret.json --port 8080 --no-browser
 ```
 
-Paste the printed URL into **Chrome OS Chrome**. After Allow, it must land on `http://127.0.0.1:8080`. If that page errors, the browser-inside-Penguin path above is the one that works.
+Paste the printed URL into Chrome OS Chrome. After Allow it must open `http://127.0.0.1:8080`.
 
 You only need this login once. After secrets are on GitHub, daily posting does not use Penguin at all.
 
