@@ -288,10 +288,43 @@ One sitting can cover a week (3 Shorts). That is how this stays automated **and*
 
 ## If something fails
 
+### Error 403: access_denied — “has not completed the Google verification process”
+
+This is **normal**. You are not waiting for Google to approve a public app. The uploader is in **Testing**, so only emails you list as testers can sign in. Add **yourself**.
+
+Do this in **Chrome OS Chrome** (the normal browser, not Penguin):
+
+1. Open [Google Cloud Console](https://console.cloud.google.com/).
+2. Top bar: click the **project name**. Pick the project you created for this (often `contentlovers108-uploader`). If you pick the wrong project, the tester list will not match the JSON file.
+3. Left menu: **APIs & Services** → **OAuth consent screen**.  
+   (Newer console: **Google Auth platform** → **Audience**.)
+4. Publishing status should stay **Testing**. Do not click Publish to production.
+5. Find **Test users** → **Add users**.
+6. Type the **same Gmail** you use to open [YouTube Studio](https://studio.youtube.com) for **Anand / @Contentlovers108**. Save.
+7. Wait one minute.
+
+Then in Penguin:
+
+```bash
+cd ~/youtube-uploader
+source .venv/bin/activate
+export PYTHONPATH=.
+python -m pehli_salary.cli auth --client-secrets client_secret.json --port 8080
+```
+
+On the Google page:
+
+- Sign in with **that same tester Gmail**, not another Google account.
+- You may see “Google hasn’t verified this app”. Click **Advanced** → **Go to Contentlovers108 Uploader (unsafe)**. That is expected for a private tester app.
+- Allow the YouTube upload permission.
+- If it asks which channel, pick **Contentlovers108**.
+
+You do **not** fill in Google’s long “verify this app” form. That is for apps used by strangers.
+
 | Symptom | Fix |
 | --- | --- |
 | Action dry-runs even with `dry_run=false` | `YOUTUBE_REFRESH_TOKEN` secret missing or empty |
-| OAuth “access denied” | Channel Gmail not in Test users |
+| OAuth “access denied” / 403 | Add your Studio Gmail under Test users (section above) |
 | `uploadScope` / 403 | API not enabled, or you authed a different Google account / a different channel than **@Contentlovers108** |
 | Quota | Default is enough for 1–2 uploads/day; do not burst |
 | Video looks empty / no audio | ffmpeg on the runner; already installed in the workflow |
