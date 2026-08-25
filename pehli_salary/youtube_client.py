@@ -6,7 +6,6 @@ from pathlib import Path
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 
@@ -46,29 +45,6 @@ def load_credentials() -> Credentials:
         "Set YOUTUBE_CLIENT_ID, YOUTUBE_CLIENT_SECRET, YOUTUBE_REFRESH_TOKEN "
         "or run: python3 -m pehli_salary.cli auth"
     )
-
-
-def run_auth_flow(
-    client_secrets: Path,
-    *,
-    port: int = 8080,
-    open_browser: bool = True,
-) -> Path:
-    flow = InstalledAppFlow.from_client_secrets_file(str(client_secrets), SCOPES)
-    print(
-        "A Google login page is required. If no browser opens, copy the URL "
-        "from this terminal into Chrome (the same Google account that owns "
-        "@Contentlovers108)."
-    )
-    creds = flow.run_local_server(
-        host="127.0.0.1",
-        port=port,
-        open_browser=open_browser,
-        bind_addr="127.0.0.1",
-    )
-    dest = ROOT / "token.json"
-    dest.write_text(creds.to_json(), encoding="utf-8")
-    return dest
 
 
 def build_status(item: QueueItem, *, privacy: str, now: datetime | None = None) -> dict:

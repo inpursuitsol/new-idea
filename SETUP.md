@@ -179,7 +179,7 @@ find ~ -name '*client_secret*' 2>/dev/null
 You should see a path printed. Copy that file in:
 
 ```bash
-cp ~/client_secret_*.json ~/youtube-uploader/client_secret.json
+cp /home/star/client_secret_*.json ~/youtube-uploader/client_secret.json
 ```
 
 If `cp` says “cannot stat”, the JSON is in a subfolder. Run `find ~ -name '*client_secret*'` and use **that full path**:
