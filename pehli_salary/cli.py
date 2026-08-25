@@ -33,6 +33,17 @@ def main(argv: list[str] | None = None) -> int:
 
     auth = sub.add_parser("auth", help="Browser OAuth; writes token.json")
     auth.add_argument("--client-secrets", default="client_secret.json")
+    auth.add_argument(
+        "--port",
+        type=int,
+        default=8080,
+        help="Local callback port (use 8080 and forward it if you are on ChromeOS Penguin)",
+    )
+    auth.add_argument(
+        "--no-browser",
+        action="store_true",
+        help="Do not auto-open a browser; paste the printed URL into Chrome yourself",
+    )
 
     args = parser.parse_args(argv)
     if args.cmd == "plan":
@@ -49,7 +60,11 @@ def main(argv: list[str] | None = None) -> int:
     if args.cmd == "publish-due":
         return cmd_publish(_parse_day(args.day), dry_run=args.dry_run, privacy=args.privacy)
     if args.cmd == "auth":
-        dest = run_auth_flow(Path(args.client_secrets))
+        dest = run_auth_flow(
+            Path(args.client_secrets),
+            port=args.port,
+            open_browser=not args.no_browser,
+        )
         print(f"Wrote {dest}. Put refresh_token in YOUTUBE_REFRESH_TOKEN.")
         return 0
     return 1

@@ -85,28 +85,48 @@ Dashboard cards (Latest video, 0 views, Partner Program news) can be ignored for
    - Application type: **Desktop app**.
    - Download JSON. Save it locally as `client_secret.json`. Never commit it. It is already gitignored.
 
-### 4. Generate the refresh token on your laptop (once)
+### 4. Generate the refresh token (once) — not on Penguin if you can avoid it
 
-You must do this on a machine with a browser. I cannot complete Google’s login for you.
+This command starts a tiny web server and needs **Google login in Chrome**. It is **not** a good fit for the Chromebook **Penguin** Linux terminal:
+
+- Penguin is a VM. Its `localhost` is not the same as Chrome OS Chrome.
+- Penguin usually has no GUI browser, so the login page never appears.
+- `pip` inside Penguin is fine for other commands; this one is the exception.
+
+**Do this instead:** Windows, Mac, or a normal Ubuntu desktop — any machine where you already use Chrome to open [studio.youtube.com](https://studio.youtube.com) as **Anand / @Contentlovers108**.
 
 ```bash
 git clone https://github.com/inpursuitsol/new-idea.git
 cd new-idea
 git checkout cursor/pehli-salary-youtube-bbab   # or main after merge
 python3 -m pip install -r requirements.txt
-# put client_secret.json in this folder
+# put client_secret.json in this folder (Downloads → copy into new-idea)
 PYTHONPATH=. python3 -m pehli_salary.cli auth --client-secrets client_secret.json
 ```
 
-A browser window opens. Sign in as the **owner of @Contentlovers108**. If Google shows a channel picker, choose this channel. Click Allow.
+Chrome should open. Sign in as the **owner of @Contentlovers108**. Allow. You should see `Wrote .../token.json`.
 
-This writes `token.json` (gitignored). Open it and copy:
+**If the Chromebook is all you have:** you can still try Penguin, but you must port-forward:
+
+1. Chrome OS settings → Linux → Port forwarding → add port **8080**.
+2. In Penguin:
+
+   ```bash
+   PYTHONPATH=. python3 -m pehli_salary.cli auth --client-secrets client_secret.json --port 8080 --no-browser
+   ```
+
+3. Copy the `https://accounts.google.com/...` URL from the terminal into **Chrome OS Chrome** (not a browser inside Linux).
+4. After you click Allow, Google redirects to `http://localhost:8080/...`. That only works if port 8080 was forwarded in step 1.
+
+If that redirect spins / connection refused, stop and run the same `auth` command on a Windows/Mac PC instead. You only need this once; then secrets live on GitHub.
+
+Open `token.json` (gitignored) and copy:
 
 - `client_id`
 - `client_secret`
 - `refresh_token`
 
-If Google says the app is in testing, confirm the account is under Test users (step 3).
+If Google says the app is in testing, confirm the account is under Test users (step 3). If it shows a channel picker, choose **Contentlovers108**.
 
 ### 5. Put secrets on GitHub (this is what actually automates posting)
 

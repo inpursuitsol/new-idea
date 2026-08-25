@@ -48,9 +48,19 @@ def load_credentials() -> Credentials:
     )
 
 
-def run_auth_flow(client_secrets: Path) -> Path:
+def run_auth_flow(
+    client_secrets: Path,
+    *,
+    port: int = 8080,
+    open_browser: bool = True,
+) -> Path:
     flow = InstalledAppFlow.from_client_secrets_file(str(client_secrets), SCOPES)
-    creds = flow.run_local_server(port=0)
+    print(
+        "A Google login page is required. If no browser opens, copy the URL "
+        "from this terminal into Chrome (the same Google account that owns "
+        "@Contentlovers108)."
+    )
+    creds = flow.run_local_server(port=port, open_browser=open_browser)
     dest = ROOT / "token.json"
     dest.write_text(creds.to_json(), encoding="utf-8")
     return dest
