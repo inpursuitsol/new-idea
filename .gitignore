@@ -7,6 +7,8 @@ outbox/
 token.json
 client_secret.json
 .env
+.kite_access_token
+.broker_access_token
 .DS_Store
 *.mp4
 *.mp3
