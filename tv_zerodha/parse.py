@@ -17,16 +17,17 @@ _ACTIONS = {
 }
 
 _ORDER_TYPES = {"MARKET", "LIMIT", "SL", "SL-M"}
-_PRODUCTS = {"MIS", "CNC", "NRML"}
+_PRODUCTS = {"MIS", "CNC", "NRML", "I", "D", "M"}
 
 _TICKER_RE = re.compile(
     r"^(?:(?P<exchange>NSE|BSE|NFO|BFO|MCX):)?(?P<symbol>[A-Z0-9&._-]+)$",
     re.IGNORECASE,
 )
+_LOOSE_ACTION = re.compile(r"\b(BUY|SELL|LONG|SHORT)\b", re.IGNORECASE)
 
 
 class AlertError(ValueError):
-    """TradingView payload cannot be turned into a Kite order."""
+    """Alert cannot be turned into a broker order."""
 
 
 @dataclass(frozen=True)
@@ -47,14 +48,24 @@ def parse_json_object(payload: Any) -> dict[str, Any]:
     return _as_mapping(payload)
 
 
-def parse_alert(payload: Any, settings: Settings) -> TradeIntent:
-    data = parse_json_object(payload)
-    action = _action(data)
-    exchange, symbol = _symbol(data, settings.default_exchange)
+def parse_alert(
+    payload: Any,
+    settings: Settings,
+    action_override: str | None = None,
+) -> TradeIntent:
+    data, leftover_text = _payload_dict(payload)
+    action = _action(data, leftover_text, action_override)
+    exchange, symbol = _symbol(data, settings)
     quantity = _quantity(data, settings)
     product = str(data.get("product") or settings.default_product).upper()
+    if product == "I":
+        product = "MIS"
+    elif product == "D":
+        product = "CNC"
+    elif product == "M":
+        product = "NRML"
     order_type = str(data.get("order_type") or data.get("ordertype") or settings.default_order_type).upper()
-    if product not in _PRODUCTS:
+    if product not in {"MIS", "CNC", "NRML"}:
         raise AlertError(f"unsupported product {product!r}")
     if order_type not in _ORDER_TYPES:
         raise AlertError(f"unsupported order_type {order_type!r}")
@@ -88,41 +99,65 @@ def parse_alert(payload: Any, settings: Settings) -> TradeIntent:
     )
 
 
-def _as_mapping(payload: Any) -> dict[str, Any]:
+def _payload_dict(payload: Any) -> tuple[dict[str, Any], str]:
+    if payload in (None, "", b"", {}, []):
+        return {}, ""
     if isinstance(payload, bytes):
         payload = payload.decode("utf-8")
+    if isinstance(payload, Mapping):
+        return {str(k).lower(): v for k, v in payload.items()}, ""
     if isinstance(payload, str):
         text = payload.strip()
         if not text:
-            raise AlertError("empty alert body")
+            return {}, ""
         try:
-            payload = json.loads(text)
-        except json.JSONDecodeError as exc:
-            raise AlertError("alert body is not valid JSON") from exc
-    if not isinstance(payload, Mapping):
+            parsed = json.loads(text)
+        except json.JSONDecodeError:
+            return {}, text
+        if isinstance(parsed, Mapping):
+            return {str(k).lower(): v for k, v in parsed.items()}, ""
         raise AlertError("alert body must be a JSON object")
-    return {str(k).lower(): v for k, v in payload.items()}
+    raise AlertError("alert body must be a JSON object")
 
 
-def _action(data: Mapping[str, Any]) -> str:
+def _as_mapping(payload: Any) -> dict[str, Any]:
+    data, leftover = _payload_dict(payload)
+    if leftover:
+        raise AlertError("alert body is not valid JSON")
+    if not data and payload not in (None, "", b"", {}, []):
+        raise AlertError("empty alert body")
+    if payload in (None, "", b"") or (isinstance(payload, str) and not payload.strip()):
+        raise AlertError("empty alert body")
+    return data
+
+
+def _action(data: Mapping[str, Any], leftover_text: str, override: str | None) -> str:
+    if override:
+        key = str(override).strip().upper()
+        if key not in _ACTIONS:
+            raise AlertError(f"unsupported action {override!r}")
+        return _ACTIONS[key]
     raw = data.get("action") or data.get("side") or data.get("transaction_type")
-    if raw is None:
-        raise AlertError("missing action (BUY or SELL)")
-    key = str(raw).strip().upper()
-    if key not in _ACTIONS:
-        raise AlertError(f"unsupported action {raw!r}")
-    return _ACTIONS[key]
+    if raw is not None:
+        key = str(raw).strip().upper()
+        if key not in _ACTIONS:
+            raise AlertError(f"unsupported action {raw!r}")
+        return _ACTIONS[key]
+    match = _LOOSE_ACTION.search(leftover_text or "")
+    if match:
+        return _ACTIONS[match.group(1).upper()]
+    raise AlertError("missing action (BUY or SELL)")
 
 
-def _symbol(data: Mapping[str, Any], default_exchange: str) -> tuple[str, str]:
-    ticker = data.get("tradingsymbol") or data.get("symbol") or data.get("ticker")
-    if ticker is None:
-        raise AlertError("missing symbol / ticker")
+def _symbol(data: Mapping[str, Any], settings: Settings) -> tuple[str, str]:
+    ticker = data.get("tradingsymbol") or data.get("symbol") or data.get("ticker") or settings.default_symbol
+    if not ticker:
+        raise AlertError("missing symbol — set stock in trade.yaml")
     text = str(ticker).strip().upper().replace(" ", "")
     match = _TICKER_RE.match(text)
     if not match:
         raise AlertError(f"cannot parse ticker {ticker!r}")
-    exchange = (data.get("exchange") or match.group("exchange") or default_exchange)
+    exchange = data.get("exchange") or match.group("exchange") or settings.default_exchange
     return str(exchange).upper(), match.group("symbol").upper()
 
 

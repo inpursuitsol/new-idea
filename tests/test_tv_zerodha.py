@@ -108,6 +108,7 @@ def test_live_broker_maps_intent_to_kite_place_order():
     assert result == {
         "order_id": "123456",
         "dry_run": False,
+        "broker": "zerodha",
         "order": _order_kwargs(intent),
     }
     assert kite.kwargs["variety"] == "regular"
@@ -184,3 +185,63 @@ def test_health_and_cli_preview(tmp_path: Path, capsys, monkeypatch):
     out = json.loads(capsys.readouterr().out)
     assert out["tradingsymbol"] == "INFY"
     assert out["action"] == "BUY"
+
+
+def test_invite_only_buy_link_uses_stock_from_settings():
+    broker = DryRunBroker()
+    client = TestClient(create_app(settings(default_symbol="RELIANCE"), broker))
+    peek = client.get("/buy/s3cret")
+    assert peek.status_code == 200
+    assert peek.json()["hint"]
+    assert broker.placed == []
+    fired = client.post("/buy/s3cret")
+    assert fired.status_code == 200
+    body = fired.json()
+    assert body["practice"] is True
+    assert body["order"]["tradingsymbol"] == "RELIANCE"
+    assert body["order"]["transaction_type"] == "BUY"
+    sell = client.post("/sell/s3cret")
+    assert sell.json()["order"]["transaction_type"] == "SELL"
+    assert client.post("/buy/wrong").status_code == 401
+
+
+def test_plain_text_alert_finds_buy_word():
+    intent = parse_alert("My invite script says BUY now", settings(default_symbol="INFY"))
+    assert intent.action == "BUY"
+    assert intent.tradingsymbol == "INFY"
+
+
+def test_upstox_broker_uses_instrument_key_and_intraday_product():
+    from tv_zerodha.parse import parse_alert as parse
+    from tv_zerodha.upstox import UpstoxBroker, lookup_instrument_key
+
+    posted: dict = {}
+
+    def post_order(payload, token):
+        posted["payload"] = payload
+        posted["token"] = token
+        return {"data": {"order_ids": ["UP1"]}}
+
+    broker = UpstoxBroker("tok", instrument_key="NSE_EQ|INE002A01018", post_order=post_order)
+    intent = parse({"action": "BUY", "symbol": "RELIANCE", "quantity": 1}, settings())
+    result = broker.place(intent)
+    assert result["order_id"] == "UP1"
+    assert result["broker"] == "upstox"
+    assert posted["payload"]["instrument_token"] == "NSE_EQ|INE002A01018"
+    assert posted["payload"]["product"] == "I"
+    assert posted["payload"]["transaction_type"] == "BUY"
+    key = lookup_instrument_key(
+        "NSE",
+        "RELIANCE",
+        rows=[{"trading_symbol": "RELIANCE", "segment": "NSE_EQ", "instrument_key": "NSE_EQ|INE002A01018"}],
+    )
+    assert key.startswith("NSE_EQ|")
+
+
+def test_home_page_explains_practice_mode():
+    client = TestClient(create_app(settings(default_symbol="TCS", public_base_url="https://example.ngrok.app"), DryRunBroker()))
+    page = client.get("/")
+    assert page.status_code == 200
+    assert "Practice mode is ON" in page.text
+    assert "/buy/s3cret" in page.text
+    assert "TCS" in page.text

@@ -27,7 +27,7 @@ class DryRunBroker:
     def place(self, intent: TradeIntent) -> dict[str, Any]:
         payload = _order_kwargs(intent)
         order_id = f"DRYRUN-{len(self.placed) + 1}"
-        result = {"order_id": order_id, "dry_run": True, "order": payload}
+        result = {"order_id": order_id, "dry_run": True, "broker": "practice", "order": payload}
         self.placed.append(result)
         return result
 
@@ -43,21 +43,27 @@ class KiteBroker:
             order_id = self._kite.place_order(variety=self._variety, **kwargs)
         except Exception as exc:  # kiteconnect raises its own types
             raise BrokerError(str(exc)) from exc
-        return {"order_id": str(order_id), "dry_run": False, "order": kwargs}
+        return {"order_id": str(order_id), "dry_run": False, "broker": "zerodha", "order": kwargs}
 
 
 def build_broker(settings: Settings) -> Broker:
     if settings.dry_run:
         return DryRunBroker()
+    token = settings.load_access_token()
+    if settings.broker == "upstox":
+        from tv_zerodha.upstox import UpstoxBroker
+
+        if not token:
+            raise BrokerError("Open http://127.0.0.1:8080 and log in to Upstox first")
+        return UpstoxBroker(token, instrument_key=settings.upstox_instrument_key)
     try:
         from kiteconnect import KiteConnect
     except ImportError as exc:
         raise BrokerError("install kiteconnect (pip install -r requirements-trading.txt)") from exc
     if not settings.kite_api_key:
-        raise BrokerError("KITE_API_KEY is required when TV_ZERODHA_DRY_RUN=false")
-    token = settings.load_access_token()
+        raise BrokerError("kite_api_key is required when broker is zerodha")
     if not token:
-        raise BrokerError("no Kite access token; run: python -m tv_zerodha.cli session <request_token>")
+        raise BrokerError("Open http://127.0.0.1:8080 and log in to Zerodha first")
     kite = KiteConnect(api_key=settings.kite_api_key)
     kite.set_access_token(token)
     return KiteBroker(kite, variety=settings.variety)

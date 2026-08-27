@@ -6,14 +6,14 @@ import sys
 from pathlib import Path
 
 from tv_zerodha.config import Settings
-from tv_zerodha.kite_client import BrokerError, exchange_request_token, login_url
+from tv_zerodha.kite_client import BrokerError, exchange_request_token
 from tv_zerodha.parse import AlertError, parse_alert
 from tv_zerodha.webhook import create_app, run
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Bridge TradingView indicator alerts to Zerodha Kite orders."
+        description="Bridge TradingView alerts to Upstox or Zerodha."
     )
     sub = parser.add_subparsers(dest="cmd", required=True)
 
@@ -29,7 +29,11 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.cmd == "login-url":
         try:
-            print(login_url(settings))
+            if settings.broker == "upstox":
+                from tv_zerodha.upstox import login_url as broker_login_url
+            else:
+                from tv_zerodha.kite_client import login_url as broker_login_url
+            print(broker_login_url(settings))
         except BrokerError as exc:
             print(exc, file=sys.stderr)
             return 2
@@ -37,7 +41,12 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.cmd == "session":
         try:
-            token = exchange_request_token(settings, args.request_token)
+            if settings.broker == "upstox":
+                from tv_zerodha.upstox import exchange_auth_code
+
+                token = exchange_auth_code(settings, args.request_token)
+            else:
+                token = exchange_request_token(settings, args.request_token)
         except BrokerError as exc:
             print(exc, file=sys.stderr)
             return 2
