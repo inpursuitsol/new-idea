@@ -46,6 +46,10 @@ Follow [SETUP.md](SETUP.md). On a Chromebook, skip a second `git clone` if `~/ne
 
 Until those exist, `publish-due` prints the payload and exits 2 instead of uploading. Drop your own reads in `channel/voiceovers/{id}.mp3` if you want it to sound like you, not TTS.
 
+## TradingView → Zerodha
+
+Indicator alerts on TradingView can place Kite orders through a webhook in this repo (`tv_zerodha/`). Dry-run is on until you set `TV_ZERODHA_DRY_RUN=false`. Setup: [docs/TV_ZERODHA.md](docs/TV_ZERODHA.md).
+
 ## Monetization path (policy-safe)
 
 1. Consistency on the calendar above until **1,000 subs** and either **4,000 long-form watch hours** or the current Shorts-view threshold.
