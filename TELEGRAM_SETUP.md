@@ -15,7 +15,7 @@ Bot: @pehlisalary_poster_bot
 
 | Type | When | Source |
 | --- | --- | --- |
-| 💰 TIP | Tue / Thu / Sat 09:00 IST | `channel/queue.yaml` shorts |
+| 💰 TIP | Tue / Thu / Sat **11:11 IST** | `channel/queue.yaml` shorts |
 | 📢 JOB | Every 6 hours (new items only) | `channel/telegram_sources.yaml` RSS |
 
 Posts are free. Job links use an aggregator feed — each post says to verify on the official site.
