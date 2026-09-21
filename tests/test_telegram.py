@@ -41,6 +41,52 @@ def test_parse_rss_extracts_job():
     assert len(entries) == 1
     assert entries[0].title == "SSC CGL 2026"
     assert entries[0].link == "https://example.com/job"
+    assert entries[0].entry_id == "https://example.com/job"
+
+
+def test_poll_skips_already_posted_link(tmp_path: Path, monkeypatch):
+    from pehli_salary.telegram_feeds import FeedEntry, poll_feeds
+
+    state_path = tmp_path / "posted.json"
+    entry = FeedEntry(
+        "https://example.com/job",
+        "SSC CGL 2026",
+        "https://example.com/job",
+        "Apply online",
+        "📢 JOB",
+    )
+
+    class FakeResponse:
+        def read(self):
+            return SAMPLE_RSS.encode()
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+    monkeypatch.setattr(
+        "pehli_salary.telegram_feeds.load_sources",
+        lambda: [{"label": "📢 JOB", "url": "https://example.com/feed"}],
+    )
+    monkeypatch.setattr("pehli_salary.telegram_feeds.fetch_feed", lambda url: SAMPLE_RSS)
+    monkeypatch.setattr("pehli_salary.config.TELEGRAM_STATE_PATH", state_path)
+    monkeypatch.setattr(
+        "pehli_salary.telegram_state.TELEGRAM_STATE_PATH",
+        state_path,
+    )
+    sent: list[str] = []
+    monkeypatch.setattr(
+        "pehli_salary.telegram_client.send_message",
+        lambda text, dry_run=False: sent.append(text) or {},
+    )
+
+    first = poll_feeds(dry_run=False, limit_per_feed=1)
+    second = poll_feeds(dry_run=False, limit_per_feed=1)
+    assert len(first) == 1
+    assert second == []
+    assert len(sent) == 1
 
 
 def test_format_feed_post_has_verify_line():

@@ -44,12 +44,13 @@ def parse_rss(xml_text: str) -> list[FeedEntry]:
     for item in channel.findall("item"):
         title = _text(item.find("title"))
         link = _text(item.find("link"))
+        link = link.strip()
         guid = _text(item.find("guid")) or link or title
         summary = _clean_html(_text(item.find("description")))
         if title and link:
             entries.append(
                 FeedEntry(
-                    entry_id=guid,
+                    entry_id=_entry_id(link, guid),
                     title=title.strip(),
                     link=link.strip(),
                     summary=summary.strip(),
@@ -78,7 +79,7 @@ def format_feed_post(entry: FeedEntry, label: str) -> str:
     )
 
 
-def poll_feeds(*, dry_run: bool = False, limit_per_feed: int = 3) -> list[str]:
+def poll_feeds(*, dry_run: bool = False, limit_per_feed: int = 1) -> list[str]:
     from pehli_salary.telegram_client import send_message
 
     posted: list[str] = []
@@ -118,3 +119,9 @@ def _text(node: ET.Element | None) -> str:
 
 def _clean_html(text: str) -> str:
     return re.sub(r"<[^>]+>", "", text).replace("\n", " ").strip()
+
+
+def _entry_id(link: str, guid: str) -> str:
+    """Stable dedup key across RSS runs (link beats guid)."""
+    normalized = link.strip().rstrip("/")
+    return normalized or guid.strip()
