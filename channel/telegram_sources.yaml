@@ -1,0 +1,4 @@
+# RSS feeds for job/scheme alerts. Links are aggregators — posts tell users to verify officially.
+feeds:
+  - label: "📢 JOB"
+    url: "https://www.freejobalert.com/feed/"

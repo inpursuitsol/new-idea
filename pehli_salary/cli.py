@@ -40,6 +40,16 @@ def main(argv: list[str] | None = None) -> int:
         help="Do not auto-open a browser; paste the printed URL yourself",
     )
 
+    tg = sub.add_parser("telegram", help="Post to the Contentlovers108 Telegram channel")
+    tg_sub = tg.add_subparsers(dest="tg_cmd", required=True)
+    tg_tip = tg_sub.add_parser("post-tip", help="Post one finance tip")
+    tg_tip.add_argument("--id", default=None, help="Queue item id (default: next unpublished short)")
+    tg_tip.add_argument("--dry-run", action="store_true")
+    tg_due = tg_sub.add_parser("post-due", help="Post tip on Tue/Thu/Sat + poll job feeds")
+    tg_due.add_argument("--dry-run", action="store_true")
+    tg_poll = tg_sub.add_parser("poll-jobs", help="Poll RSS feeds for new job/scheme alerts")
+    tg_poll.add_argument("--dry-run", action="store_true")
+
     args = parser.parse_args(argv)
     if args.cmd == "auth":
         from pehli_salary.auth import run_auth_flow
@@ -65,6 +75,13 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_render_due(_parse_day(args.day))
     if args.cmd == "publish-due":
         return cmd_publish(_parse_day(args.day), dry_run=args.dry_run, privacy=args.privacy)
+    if args.cmd == "telegram":
+        if args.tg_cmd == "post-tip":
+            return cmd_telegram_post_tip(args.id, dry_run=args.dry_run)
+        if args.tg_cmd == "post-due":
+            return cmd_telegram_post_due(dry_run=args.dry_run)
+        if args.tg_cmd == "poll-jobs":
+            return cmd_telegram_poll_jobs(dry_run=args.dry_run)
     return 1
 
 
@@ -148,6 +165,61 @@ def cmd_publish(day: date, *, dry_run: bool, privacy: str) -> int:
             print(json.dumps(payload, ensure_ascii=False, indent=2))
             return 2
         print(json.dumps({"id": item.id, "youtube": response.get("id")}, indent=2))
+    return 0
+
+
+def cmd_telegram_post_tip(item_id: str | None, *, dry_run: bool) -> int:
+    from pehli_salary.telegram_client import MissingTelegramCredentials, send_message
+    from pehli_salary.telegram_state import mark_tip
+    from pehli_salary.telegram_tips import format_tip, next_tip_item
+
+    item = _by_id(item_id) if item_id else next_tip_item()
+    if item is None:
+        print("No tip to post.")
+        return 0
+    text = format_tip(item)
+    try:
+        send_message(text, dry_run=dry_run)
+    except MissingTelegramCredentials as exc:
+        print(str(exc))
+        print(text)
+        return 2
+    if not dry_run:
+        mark_tip(item.id)
+    print(json.dumps({"id": item.id, "posted": not dry_run}, ensure_ascii=False))
+    return 0
+
+
+def cmd_telegram_post_due(*, dry_run: bool) -> int:
+    from pehli_salary.telegram_client import MissingTelegramCredentials
+    from pehli_salary.telegram_feeds import poll_feeds
+    from pehli_salary.telegram_tips import post_due_tip
+
+    try:
+        tip_id = post_due_tip(dry_run=dry_run)
+        posted_jobs = poll_feeds(dry_run=dry_run, limit_per_feed=1)
+    except MissingTelegramCredentials as exc:
+        print(str(exc))
+        return 2
+    print(
+        json.dumps(
+            {"tip": tip_id, "jobs": posted_jobs},
+            ensure_ascii=False,
+        )
+    )
+    return 0
+
+
+def cmd_telegram_poll_jobs(*, dry_run: bool) -> int:
+    from pehli_salary.telegram_client import MissingTelegramCredentials
+    from pehli_salary.telegram_feeds import poll_feeds
+
+    try:
+        posted = poll_feeds(dry_run=dry_run)
+    except MissingTelegramCredentials as exc:
+        print(str(exc))
+        return 2
+    print(json.dumps({"posted": posted}, ensure_ascii=False))
     return 0
 
 
