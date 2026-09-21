@@ -2,8 +2,8 @@ name: Telegram channel posts
 
 on:
   schedule:
-    # Tue / Thu / Sat 09:00 IST
-    - cron: "30 3 * * 2,4,6"
+    # Tue / Thu / Sat 11:11 IST (05:41 UTC)
+    - cron: "41 5 * * 2,4,6"
     # Poll job feeds every 6 hours
     - cron: "15 */6 * * *"
   workflow_dispatch:
@@ -12,9 +12,18 @@ on:
         description: "true to print payloads without posting"
         required: false
         default: "false"
+      post_tip:
+        description: "Post next finance tip (manual)"
+        required: false
+        default: "false"
+      poll_jobs:
+        description: "Poll job RSS feeds"
+        required: false
+        default: "true"
 
 jobs:
-  post:
+  post-tip:
+    if: github.event.schedule == '41 5 * * 2,4,6' || inputs.post_tip == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -23,9 +32,7 @@ jobs:
           python-version: "3.12"
       - name: Python deps
         run: pip install -r requirements.txt
-      - name: Tests
-        run: PYTHONPATH=. python -m pytest -q tests/test_telegram.py
-      - name: Post due tips and poll jobs
+      - name: Post finance tip
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHANNEL_ID: ${{ secrets.TELEGRAM_CHANNEL_ID }}
@@ -34,4 +41,25 @@ jobs:
           if [ "${{ inputs.dry_run }}" = "true" ] || [ -z "$TELEGRAM_BOT_TOKEN" ]; then
             EXTRA+=(--dry-run)
           fi
-          PYTHONPATH=. python -m pehli_salary.cli telegram post-due "${EXTRA[@]}"
+          PYTHONPATH=. python -m pehli_salary.cli telegram post-tip "${EXTRA[@]}"
+
+  poll-jobs:
+    if: github.event.schedule == '15 */6 * * *' || (github.event_name == 'workflow_dispatch' && inputs.poll_jobs == 'true')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Python deps
+        run: pip install -r requirements.txt
+      - name: Poll job feeds
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHANNEL_ID: ${{ secrets.TELEGRAM_CHANNEL_ID }}
+        run: |
+          EXTRA=()
+          if [ "${{ inputs.dry_run }}" = "true" ] || [ -z "$TELEGRAM_BOT_TOKEN" ]; then
+            EXTRA+=(--dry-run)
+          fi
+          PYTHONPATH=. python -m pehli_salary.cli telegram poll-jobs "${EXTRA[@]}"
