@@ -15,7 +15,7 @@ Bot: @pehlisalary_poster_bot
 
 | Type | When | Source |
 | --- | --- | --- |
-| 💰 TIP | Tue / Thu / Sat **11:11 IST** | `channel/queue.yaml` shorts |
+| 💰 TIP | Tue / Thu / Sat **11:11 IST** (cron runs daily; Python skips other days) | `channel/queue.yaml` shorts |
 | 📢 JOB | Every 6 hours (new items only, max 1 per run) | `channel/telegram_sources.yaml` RSS |
 
 Posted job/tip IDs are stored in `channel/telegram_posted.json` (committed to git after each run) so the same alert is not reposted.

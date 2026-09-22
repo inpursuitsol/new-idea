@@ -2,8 +2,8 @@ name: Telegram channel posts
 
 on:
   schedule:
-    # Tue / Thu / Sat 11:11 IST (05:41 UTC)
-    - cron: "41 5 * * 2,4,6"
+    # 11:11 IST daily (05:41 UTC). Tue/Thu/Sat filter is in Python.
+    - cron: "41 5 * * *"
     # Poll job feeds every 6 hours
     - cron: "15 */6 * * *"
   workflow_dispatch:
@@ -41,7 +41,7 @@ jobs:
       - name: Python deps
         run: pip install -r requirements.txt
       - name: Post finance tip
-        if: github.event.schedule == '41 5 * * 2,4,6' || inputs.post_tip == 'true'
+        if: github.event.schedule == '41 5 * * *' || inputs.post_tip == 'true'
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHANNEL_ID: ${{ secrets.TELEGRAM_CHANNEL_ID }}
