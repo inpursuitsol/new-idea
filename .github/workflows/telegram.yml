@@ -19,25 +19,29 @@ on:
       poll_jobs:
         description: "Poll job RSS feeds"
         required: false
-        default: "true"
+        default: "false"
+
+concurrency:
+  group: telegram-${{ github.repository }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
 
 jobs:
-  post-tip:
-    if: github.event.schedule == '41 5 * * 2,4,6' || inputs.post_tip == 'true'
+  telegram:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Restore posted-state cache
-        uses: actions/cache@v4
         with:
-          path: .telegram
-          key: telegram-state-${{ github.repository }}
+          ref: main
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - name: Python deps
         run: pip install -r requirements.txt
       - name: Post finance tip
+        if: github.event.schedule == '41 5 * * 2,4,6' || inputs.post_tip == 'true'
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHANNEL_ID: ${{ secrets.TELEGRAM_CHANNEL_ID }}
@@ -47,23 +51,8 @@ jobs:
             EXTRA+=(--dry-run)
           fi
           PYTHONPATH=. python -m pehli_salary.cli telegram post-tip "${EXTRA[@]}"
-
-  poll-jobs:
-    if: github.event.schedule == '15 */6 * * *' || (github.event_name == 'workflow_dispatch' && inputs.poll_jobs == 'true')
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Restore posted-state cache
-        uses: actions/cache@v4
-        with:
-          path: .telegram
-          key: telegram-state-${{ github.repository }}
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Python deps
-        run: pip install -r requirements.txt
       - name: Poll job feeds
+        if: github.event.schedule == '15 */6 * * *' || inputs.poll_jobs == 'true'
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHANNEL_ID: ${{ secrets.TELEGRAM_CHANNEL_ID }}
@@ -73,3 +62,15 @@ jobs:
             EXTRA+=(--dry-run)
           fi
           PYTHONPATH=. python -m pehli_salary.cli telegram poll-jobs "${EXTRA[@]}"
+      - name: Commit posted-state to main
+        if: inputs.dry_run != 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add channel/telegram_posted.json
+          if git diff --staged --quiet; then
+            echo "No posted-state changes."
+            exit 0
+          fi
+          git commit -m "chore(telegram): sync posted state [skip ci]"
+          git push origin HEAD:main

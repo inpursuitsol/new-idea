@@ -5,6 +5,7 @@ import urllib.request
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from pathlib import Path
+from urllib.parse import urlparse, urlunparse
 
 import yaml
 
@@ -42,17 +43,17 @@ def parse_rss(xml_text: str) -> list[FeedEntry]:
         channel = root
     entries: list[FeedEntry] = []
     for item in channel.findall("item"):
-        title = _text(item.find("title"))
-        link = _text(item.find("link"))
-        link = link.strip()
+        title = _text(item.find("title")).strip()
+        link = _text(item.find("link")).strip()
         guid = _text(item.find("guid")) or link or title
         summary = _clean_html(_text(item.find("description")))
         if title and link:
+            entry_id = _entry_id(link, guid)
             entries.append(
                 FeedEntry(
-                    entry_id=_entry_id(link, guid),
-                    title=title.strip(),
-                    link=link.strip(),
+                    entry_id=entry_id,
+                    title=title,
+                    link=link,
                     summary=summary.strip(),
                     label="",
                 )
@@ -91,7 +92,7 @@ def poll_feeds(*, dry_run: bool = False, limit_per_feed: int = 1) -> list[str]:
         for entry in entries:
             if count >= limit_per_feed:
                 break
-            if seen_feed(entry.entry_id):
+            if seen_entry(entry):
                 continue
             text = format_feed_post(
                 FeedEntry(
@@ -105,10 +106,27 @@ def poll_feeds(*, dry_run: bool = False, limit_per_feed: int = 1) -> list[str]:
             )
             send_message(text, dry_run=dry_run)
             if not dry_run:
-                mark_feed(entry.entry_id)
+                mark_entry(entry)
             posted.append(entry.entry_id)
             count += 1
     return posted
+
+
+def dedupe_keys(entry: FeedEntry) -> list[str]:
+    keys = [entry.entry_id]
+    title_key = _title_key(entry.title)
+    if title_key:
+        keys.append(title_key)
+    return keys
+
+
+def seen_entry(entry: FeedEntry) -> bool:
+    return any(seen_feed(key) for key in dedupe_keys(entry))
+
+
+def mark_entry(entry: FeedEntry) -> None:
+    for key in dedupe_keys(entry):
+        mark_feed(key)
 
 
 def _text(node: ET.Element | None) -> str:
@@ -122,6 +140,26 @@ def _clean_html(text: str) -> str:
 
 
 def _entry_id(link: str, guid: str) -> str:
-    """Stable dedup key across RSS runs (link beats guid)."""
-    normalized = link.strip().rstrip("/")
+    normalized = _normalize_link(link)
     return normalized or guid.strip()
+
+
+def _normalize_link(link: str) -> str:
+    parsed = urlparse(link.strip())
+    if not parsed.scheme or not parsed.netloc:
+        return link.strip().rstrip("/")
+    return urlunparse(
+        (
+            parsed.scheme.lower(),
+            parsed.netloc.lower(),
+            parsed.path.rstrip("/"),
+            "",
+            "",
+            "",
+        )
+    )
+
+
+def _title_key(title: str) -> str:
+    slug = re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")
+    return f"title:{slug[:160]}" if slug else ""
