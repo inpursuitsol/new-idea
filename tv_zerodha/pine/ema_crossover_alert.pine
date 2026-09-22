@@ -1,0 +1,27 @@
+//@version=5
+indicator("EMA crossover → Zerodha webhook", overlay=true)
+
+fastLen = input.int(9, "Fast EMA")
+slowLen = input.int(21, "Slow EMA")
+qty = input.int(1, "Quantity to send in the alert JSON")
+passphrase = input.string("replace-with-TV_WEBHOOK_SECRET", "Webhook secret")
+product = input.string("MIS", "Kite product (MIS / CNC / NRML)")
+
+fast = ta.ema(close, fastLen)
+slow = ta.ema(close, slowLen)
+plot(fast, "Fast EMA", color=color.new(color.teal, 0))
+plot(slow, "Slow EMA", color=color.new(color.orange, 0))
+
+longSignal = ta.crossover(fast, slow)
+shortSignal = ta.crossunder(fast, slow)
+
+alertJson(action) =>
+    '{"secret":"' + passphrase + '","action":"' + action + '","ticker":"' + syminfo.ticker + '","exchange":"' + str.upper(syminfo.prefix) + '","quantity":' + str.tostring(qty) + ',"order_type":"MARKET","product":"' + product + '","price":' + str.tostring(close) + ',"indicator":"EMA_CROSS"}'
+
+if longSignal
+    alert(alertJson("BUY"), alert.freq_once_per_bar_close)
+if shortSignal
+    alert(alertJson("SELL"), alert.freq_once_per_bar_close)
+
+plotshape(longSignal, title="BUY", style=shape.triangleup, location=location.belowbar, color=color.green, size=size.small)
+plotshape(shortSignal, title="SELL", style=shape.triangledown, location=location.abovebar, color=color.red, size=size.small)

@@ -1,0 +1,25 @@
+//@version=5
+indicator("RSI threshold → Zerodha webhook", overlay=false)
+
+len = input.int(14, "RSI length")
+oversold = input.int(30, "Buy when RSI crosses up through")
+overbought = input.int(70, "Sell when RSI crosses down through")
+qty = input.int(1, "Quantity to send in the alert JSON")
+passphrase = input.string("replace-with-TV_WEBHOOK_SECRET", "Webhook secret")
+product = input.string("MIS", "Kite product (MIS / CNC / NRML)")
+
+rsi = ta.rsi(close, len)
+plot(rsi, "RSI")
+hline(oversold)
+hline(overbought)
+
+longSignal = ta.crossover(rsi, oversold)
+shortSignal = ta.crossunder(rsi, overbought)
+
+alertJson(action) =>
+    '{"secret":"' + passphrase + '","action":"' + action + '","ticker":"' + syminfo.ticker + '","exchange":"' + str.upper(syminfo.prefix) + '","quantity":' + str.tostring(qty) + ',"order_type":"MARKET","product":"' + product + '","price":' + str.tostring(close) + ',"indicator":"RSI"}'
+
+if longSignal
+    alert(alertJson("BUY"), alert.freq_once_per_bar_close)
+if shortSignal
+    alert(alertJson("SELL"), alert.freq_once_per_bar_close)
