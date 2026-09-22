@@ -128,6 +128,15 @@ def test_tip_state_tracks_posts(tmp_path: Path):
     assert load_state(state_path)["tips"] == ["s001"]
 
 
+def test_post_due_tip_skips_non_tip_day(monkeypatch):
+    from datetime import date
+
+    from pehli_salary.telegram_tips import post_due_tip
+
+    monkeypatch.setattr("pehli_salary.queue.today_ist", lambda _now=None: date(2026, 9, 21))
+    assert post_due_tip(dry_run=True) is None
+
+
 def test_format_tip_short_item():
     item = QueueItem(
         id="x",

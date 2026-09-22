@@ -171,12 +171,18 @@ def cmd_publish(day: date, *, dry_run: bool, privacy: str) -> int:
 def cmd_telegram_post_tip(item_id: str | None, *, dry_run: bool) -> int:
     from pehli_salary.telegram_client import MissingTelegramCredentials, send_message
     from pehli_salary.telegram_state import mark_tip
-    from pehli_salary.telegram_tips import format_tip, next_tip_item
+    from pehli_salary.telegram_tips import format_tip, post_due_tip
 
-    item = _by_id(item_id) if item_id else next_tip_item()
-    if item is None:
-        print("No tip to post.")
+    if item_id is None:
+        try:
+            tip_id = post_due_tip(dry_run=dry_run)
+        except MissingTelegramCredentials as exc:
+            print(str(exc))
+            return 2
+        print(json.dumps({"id": tip_id, "posted": bool(tip_id) and not dry_run}, ensure_ascii=False))
         return 0
+
+    item = _by_id(item_id)
     text = format_tip(item)
     try:
         send_message(text, dry_run=dry_run)
