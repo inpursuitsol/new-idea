@@ -44,6 +44,31 @@ def test_parse_rss_extracts_job():
     assert entries[0].entry_id == "https://example.com/job"
 
 
+def test_title_key_dedupes_same_job_with_new_link(tmp_path: Path, monkeypatch):
+    from pehli_salary.telegram_feeds import FeedEntry, mark_entry, poll_feeds, seen_entry
+
+    state_path = tmp_path / "posted.json"
+    monkeypatch.setattr("pehli_salary.config.TELEGRAM_STATE_PATH", state_path)
+
+    entry = FeedEntry(
+        "https://example.com/job?v=1",
+        "SSC CGL 2026",
+        "https://example.com/job?v=1",
+        "Apply online",
+        "📢 JOB",
+    )
+    mark_entry(entry)
+    assert seen_entry(
+        FeedEntry(
+            "https://example.com/job?v=2",
+            "SSC CGL 2026",
+            "https://example.com/job?v=2",
+            "Apply online",
+            "📢 JOB",
+        )
+    )
+
+
 def test_poll_skips_already_posted_link(tmp_path: Path, monkeypatch):
     from pehli_salary.telegram_feeds import FeedEntry, poll_feeds
 
@@ -72,10 +97,6 @@ def test_poll_skips_already_posted_link(tmp_path: Path, monkeypatch):
     )
     monkeypatch.setattr("pehli_salary.telegram_feeds.fetch_feed", lambda url: SAMPLE_RSS)
     monkeypatch.setattr("pehli_salary.config.TELEGRAM_STATE_PATH", state_path)
-    monkeypatch.setattr(
-        "pehli_salary.telegram_state.TELEGRAM_STATE_PATH",
-        state_path,
-    )
     sent: list[str] = []
     monkeypatch.setattr(
         "pehli_salary.telegram_client.send_message",
