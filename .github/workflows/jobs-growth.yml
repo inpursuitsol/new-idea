@@ -1,6 +1,8 @@
 name: InPursuit jobs growth
 
 on:
+  push:
+    branches: [main]
   schedule:
     # 10:00 IST daily. New roles are capped in Python; the hub digest runs Mon/Thu.
     - cron: "30 4 * * *"
