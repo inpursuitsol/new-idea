@@ -8,7 +8,8 @@ This does not buy visits or post the same role on a loop. Each new role is poste
 
 1. Upload `site/mu-plugins/inpursuit-jobs-discovery.php` to `wp-content/mu-plugins/` on Hostinger (create the folder if it is missing). It adds a canonical URL and an ItemList on `/jobs/`, and cleans HTML entities inside each role's JobPosting title.
 2. Upload `site/f3c8e1a94b6d4027c5e8a1d09b7f6c2e.txt` to the site root so it is available at `https://inpursuit.co.in/f3c8e1a94b6d4027c5e8a1d09b7f6c2e.txt`. IndexNow rejects pings until that file is live.
-3. In Google Search Console, confirm `inpursuit.co.in` is verified. Optional: add a service account as an owner and store its JSON in the GitHub secret `GOOGLE_INDEXING_SA_JSON`. Without that secret, Google pings are skipped and IndexNow still runs.
+3. Or add GitHub Actions secrets `HOSTINGER_FTP_HOST`, `HOSTINGER_FTP_USERNAME`, and `HOSTINGER_FTP_PASSWORD`. The jobs-growth workflow will copy both files over FTP.
+4. In Google Search Console, confirm `inpursuit.co.in` is verified. Optional: add a service account as an owner and store its JSON in the GitHub secret `GOOGLE_INDEXING_SA_JSON`. Without that secret, Google pings are skipped and IndexNow still runs.
 
 ## What runs automatically
 

@@ -34,6 +34,46 @@ function inpursuit_decode_schema_strings($value)
     return $out;
 }
 
+function inpursuit_salary_from_title(string $title): ?array
+{
+    if (!preg_match('/(\d+(?:\.\d+)?)\s*lpa/i', $title, $match)) {
+        return null;
+    }
+    $amount = (int) round(((float) $match[1]) * 100000);
+    if ($amount <= 0) {
+        return null;
+    }
+    return [
+        '@type' => 'MonetaryAmount',
+        'currency' => 'INR',
+        'value' => [
+            '@type' => 'QuantitativeValue',
+            'value' => $amount,
+            'unitText' => 'YEAR',
+        ],
+    ];
+}
+
+function inpursuit_enrich_jobposting(array $data): array
+{
+    $clean = inpursuit_decode_schema_strings($data);
+    $title = (string) ($clean['title'] ?? '');
+    if (empty($clean['baseSalary'])) {
+        $salary = inpursuit_salary_from_title($title);
+        if ($salary !== null) {
+            $clean['baseSalary'] = $salary;
+        }
+    }
+    $description = wp_strip_all_tags((string) ($clean['description'] ?? ''));
+    $description = trim(preg_replace('/\s+/', ' ', $description) ?? $description);
+    if (strlen($description) < 150) {
+        $clean['description'] = trim((string) ($clean['description'] ?? ''))
+            . '<p>Apply with your resume on InPursuit. This is a full-time role in India. '
+            . 'Use the form on this page to send your CV.</p>';
+    }
+    return $clean;
+}
+
 add_action('wp_head', function () {
     if (!inpursuit_is_jobs_hub()) {
         return;
@@ -101,7 +141,7 @@ add_action('template_redirect', function () {
                 if (!is_array($data) || ($data['@type'] ?? '') !== 'JobPosting') {
                     return $match[0];
                 }
-                $clean = inpursuit_decode_schema_strings($data);
+                $clean = inpursuit_enrich_jobposting($data);
                 $encoded = wp_json_encode($clean, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
                 if (!is_string($encoded)) {
                     return $match[0];

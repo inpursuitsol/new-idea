@@ -55,3 +55,42 @@ jobs:
           fi
           git commit -m "chore(jobs): sync promoted state [skip ci]"
           git push origin HEAD:main
+      - name: Deploy discovery files to Hostinger
+        if: ${{ secrets.HOSTINGER_FTP_HOST != '' && secrets.HOSTINGER_FTP_USERNAME != '' && secrets.HOSTINGER_FTP_PASSWORD != '' }}
+        env:
+          HOSTINGER_FTP_HOST: ${{ secrets.HOSTINGER_FTP_HOST }}
+          HOSTINGER_FTP_USERNAME: ${{ secrets.HOSTINGER_FTP_USERNAME }}
+          HOSTINGER_FTP_PASSWORD: ${{ secrets.HOSTINGER_FTP_PASSWORD }}
+        run: |
+          python3 - <<'PY'
+          import os
+          from ftplib import FTP
+
+          host = os.environ["HOSTINGER_FTP_HOST"]
+          user = os.environ["HOSTINGER_FTP_USERNAME"]
+          password = os.environ["HOSTINGER_FTP_PASSWORD"]
+          ftp = FTP()
+          ftp.connect(host, 21, timeout=30)
+          ftp.login(user, password)
+          ftp.set_pasv(True)
+
+          def ensure(path):
+              parts = [p for p in path.split("/") if p]
+              for part in parts:
+                  if part not in ftp.nlst():
+                      try:
+                          ftp.mkd(part)
+                      except Exception:
+                          pass
+                  ftp.cwd(part)
+
+          ftp.cwd("/")
+          with open("site/f3c8e1a94b6d4027c5e8a1d09b7f6c2e.txt", "rb") as fh:
+              ftp.storbinary("STOR f3c8e1a94b6d4027c5e8a1d09b7f6c2e.txt", fh)
+          ftp.cwd("/")
+          ensure("wp-content/mu-plugins")
+          with open("site/mu-plugins/inpursuit-jobs-discovery.php", "rb") as fh:
+              ftp.storbinary("STOR inpursuit-jobs-discovery.php", fh)
+          ftp.quit()
+          print("Uploaded IndexNow key and jobs discovery plugin.")
+          PY
