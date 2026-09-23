@@ -1,0 +1,57 @@
+name: InPursuit jobs growth
+
+on:
+  schedule:
+    # 10:00 IST daily. New roles are capped in Python; the hub digest runs Mon/Thu.
+    - cron: "30 4 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "true to print posts without sending or saving state"
+        required: false
+        default: "false"
+
+concurrency:
+  group: jobs-growth-${{ github.repository }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Python deps
+        run: pip install -r requirements.txt
+      - name: Audit live jobs pages
+        run: PYTHONPATH=. python -m pehli_salary.cli jobs audit
+      - name: Promote new roles
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHANNEL_ID: ${{ secrets.TELEGRAM_CHANNEL_ID }}
+          GOOGLE_INDEXING_SA_JSON: ${{ secrets.GOOGLE_INDEXING_SA_JSON }}
+        run: |
+          EXTRA=()
+          if [ "${{ inputs.dry_run }}" = "true" ] || [ -z "$TELEGRAM_BOT_TOKEN" ]; then
+            EXTRA+=(--dry-run)
+          fi
+          PYTHONPATH=. python -m pehli_salary.cli jobs promote "${EXTRA[@]}"
+      - name: Commit promoted-state to main
+        if: inputs.dry_run != 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add channel/jobs_promoted.json
+          if git diff --staged --quiet; then
+            echo "No promoted-state changes."
+            exit 0
+          fi
+          git commit -m "chore(jobs): sync promoted state [skip ci]"
+          git push origin HEAD:main

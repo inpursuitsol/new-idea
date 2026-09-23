@@ -27,6 +27,7 @@ First six weeks of scripts live in `channel/queue.yaml`.
 2. **Render** — Indian-English TTS + on-screen captions via ffmpeg.
 3. **Publish** — YouTube Data API upload, scheduled to the IST slot (or public if the cron fires at/after that time).
 4. **GitHub Action** — same publish job on cron.
+5. **Jobs growth** — daily audit of [inpursuit.co.in/jobs](https://inpursuit.co.in/jobs/), Telegram posts that link back to those roles, and IndexNow pings when a role changes. Setup: [JOBS_GROWTH.md](JOBS_GROWTH.md).
 
 Live upload cannot happen until you add YouTube OAuth secrets. **You do this once; after that cron posts.** Exact clicks: [SETUP.md](SETUP.md).
 

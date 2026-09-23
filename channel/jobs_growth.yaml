@@ -1,0 +1,11 @@
+# Live jobs on inpursuit.co.in. Promote posts link back here.
+site: https://inpursuit.co.in
+jobs_api: https://inpursuit.co.in/wp-json/wp/v2/job
+hub_url: https://inpursuit.co.in/jobs/
+# Public IndexNow key. Upload site/<key>.txt to the site root before pings work.
+indexnow_key: f3c8e1a94b6d4027c5e8a1d09b7f6c2e
+utm_source: telegram
+utm_medium: social
+utm_campaign: inpursuit-jobs
+# Max new role posts per run. Digest is separate and only on Mon/Thu IST.
+promote_limit: 2

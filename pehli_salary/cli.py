@@ -50,6 +50,13 @@ def main(argv: list[str] | None = None) -> int:
     tg_poll = tg_sub.add_parser("poll-jobs", help="Poll RSS feeds for new job/scheme alerts")
     tg_poll.add_argument("--dry-run", action="store_true")
 
+    jobs = sub.add_parser("jobs", help="Audit and promote inpursuit.co.in/jobs")
+    jobs_sub = jobs.add_subparsers(dest="jobs_cmd", required=True)
+    jobs_sub.add_parser("audit", help="Check Google-for-Jobs signals on the live site")
+    jobs_promote = jobs_sub.add_parser("promote", help="Post new roles to Telegram and ping IndexNow")
+    jobs_promote.add_argument("--dry-run", action="store_true")
+    jobs_promote.add_argument("--limit", type=int, default=None, help="Max new role posts this run")
+
     args = parser.parse_args(argv)
     if args.cmd == "auth":
         from pehli_salary.auth import run_auth_flow
@@ -82,6 +89,11 @@ def main(argv: list[str] | None = None) -> int:
             return cmd_telegram_post_due(dry_run=args.dry_run)
         if args.tg_cmd == "poll-jobs":
             return cmd_telegram_poll_jobs(dry_run=args.dry_run)
+    if args.cmd == "jobs":
+        if args.jobs_cmd == "audit":
+            return cmd_jobs_audit()
+        if args.jobs_cmd == "promote":
+            return cmd_jobs_promote(dry_run=args.dry_run, limit=args.limit)
     return 1
 
 
@@ -213,6 +225,35 @@ def cmd_telegram_post_due(*, dry_run: bool) -> int:
             ensure_ascii=False,
         )
     )
+    return 0
+
+
+def cmd_jobs_audit() -> int:
+    from pehli_salary.site_jobs import run_audit
+
+    try:
+        report = run_audit()
+    except Exception as exc:  # noqa: BLE001 — surface live-site failures on the CLI
+        print(str(exc))
+        return 1
+    print(json.dumps(report, ensure_ascii=False, indent=2))
+    return 0
+
+
+def cmd_jobs_promote(*, dry_run: bool, limit: int | None) -> int:
+    from pehli_salary.jobs_promote import promote
+    from pehli_salary.telegram_client import MissingTelegramCredentials
+
+    try:
+        result = promote(dry_run=dry_run, limit=limit)
+    except MissingTelegramCredentials as exc:
+        print(str(exc))
+        return 2
+    except Exception as exc:  # noqa: BLE001
+        print(str(exc))
+        return 1
+    public = {key: value for key, value in result.items() if key != "messages"}
+    print(json.dumps(public, ensure_ascii=False, indent=2))
     return 0
 
 
