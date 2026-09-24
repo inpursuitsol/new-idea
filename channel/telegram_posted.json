@@ -1,5 +1,7 @@
 {
-  "tips": [],
+  "tips": [
+    "s001"
+  ],
   "feeds": [
     "https://example.com/job?v=1",
     "title:ssc-cgl-2026",
