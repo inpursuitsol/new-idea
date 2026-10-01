@@ -1,0 +1,18 @@
+# Fill these four lines. Leave practice: true until you have seen a test alert.
+practice: true
+broker: upstox
+stock: RELIANCE
+quantity: 1
+secret: change-me-to-a-private-word
+# After you have an https tunnel, paste it here:
+# public_url: https://xxxx.trycloudflare.com
+
+# Create a free API app at https://upstox.com/developer/apps
+# Redirect URL in that app must be exactly:
+#   http://127.0.0.1:8080/upstox/callback
+upstox_api_key: ""
+upstox_api_secret: ""
+
+# Only needed if you switch broker to zerodha (order API is free; live data is paid).
+# kite_api_key: ""
+# kite_api_secret: ""
