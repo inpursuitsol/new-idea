@@ -4,7 +4,8 @@
     "s002",
     "s003",
     "s004",
-    "s005"
+    "s005",
+    "s006"
   ],
   "feeds": [
     "https://example.com/job?v=1",
